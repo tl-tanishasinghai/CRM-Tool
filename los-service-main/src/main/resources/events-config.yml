@@ -1,0 +1,78 @@
+events-config:
+  events:
+    PAN_DEDUPE:
+      response:
+        clientId: $.clientDedupeResponseList[0].id
+    CLIENT_CREATION:
+      response:
+        clientId: $.clientId
+    CREATE_LOAN_APPLICATION:
+      response:
+        loanAppId: $.resourceId
+      request:
+        metadata:
+          loanAmount: $.amount
+    CREATE_TOP_UP_LOAN_APPLICATION:
+      response:
+        loanAppId: $.resourceId
+      request:
+        metadata:
+          loanAmount: $.amount
+    CREATE_CONSENT:
+      request:
+        metadata:
+          consentKey: $.consentKey
+    REJECT_LOAN_APPLICATION:
+      request:
+        metadata:
+          reasonCode: $.reasonCode
+          reject_description: $.description
+    TRIGGER_DISBURSEMENT:
+      response:
+        metadata:
+          status: $.status
+    KYC_CALLBACK:
+      request:
+        clientId: $.clientId
+        loanAppId: $.loanApplicationId
+    DISBURSEMENT_CALLBACK:
+      request:
+        loanAppId: $.loanApplicationId
+    OKYC_CALLBACK:
+      request:
+        clientId: $.clientId
+        loanAppId: $.loanApplicationId
+    ESIGN_CALLBACK:
+      request:
+        clientId: $.clientId
+        loanAppId: $.loanApplicationId
+    CKYC_CALLBACK:
+      request:
+        clientId: $.clientId
+        loanAppId: $.loanApplicationId
+    MANUAL_KYC_CALLBACK:
+      request:
+        clientId: $.clientId
+        loanAppId: $.loanApplicationId
+    REJECTION_CALLBACK:
+      request:
+        clientId: $.clientId
+        loanAppId: $.loanApplicationId
+    FI_CALLBACK:
+      request:
+        clientId: $.clientId
+        loanAppId: $.loanApplicationId
+    CKYCR_CALLBACK:
+      request:
+        loanAppId: $.loanId
+
+
+    SOME_EVENT:
+      request:
+        clientId: $.payload.clientId
+        metadata:
+          sourceSystem: $.headers.source
+      response:
+        loanAppId: $.resourceId
+        metadata:
+          applicationStatus: $.status

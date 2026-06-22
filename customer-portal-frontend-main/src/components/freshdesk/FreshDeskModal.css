@@ -1,0 +1,181 @@
+.freshdesk-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    font-family: sans-serif;
+    width: 100%;
+  }
+  
+  .freshdesk-form h2 {
+    margin-top: 0;
+    font-size: 24px;
+    font-weight: 600;
+    align-self:center;
+  }
+  
+  .freshdesk-form input,
+  .freshdesk-form select,
+  .freshdesk-form textarea {
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .freshdesk-form textarea {
+    resize: vertical;
+    min-height: 80px;
+    max-height: 140px;
+    font-family: 'Poppins';
+  }
+  
+  .freshdesk-form .error {
+    color: red;
+    font-size: 12px;
+    margin-top: -10px;
+    margin-bottom: 6px;
+  }
+  
+  .freshdesk-form button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 18px;
+    font-size: 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    align-self: center;
+  }
+  
+  .freshdesk-form button[type="submit"]:hover {
+    background-color: #005dc1;
+  }
+  
+  .upload-section {
+    background-color: #f9f9f9;
+    border: 1px dashed #ccc;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .upload-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 14px;
+    border-radius: 8px;
+    background-color: #eef;
+    border: 2px dashed #ccc;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.3s ease;
+  }
+  
+  .upload-box:hover {
+    background-color: #ddeeff;
+  }
+  
+  .upload-icon {
+    font-size: 36px;
+    color: #007bff;
+    line-height: 1;
+    height:4vh;
+  }
+  .upload-box span {
+    display: block;
+    font-size:14px;
+  }
+  
+  .uploaded-files {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 10px;
+  }
+  
+  .uploaded-files li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fff;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  
+  .uploaded-files button {
+    background: none;
+    border: none;
+    color: red;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  
+  .upload-note {
+    font-size: 12px;
+    font-style: italic;
+    color: #444;
+    margin: 0px;
+    align-self: end;
+  }
+  
+  /* ✅ Sleeker Submit Button */
+  .submit-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    align-self: flex-start;
+    max-width: 160px;
+  }
+  
+  .submit-btn:hover {
+    background-color: #005dc1;
+  }
+  input[type="file"] {
+    display: none;
+  }
+
+  .freshdesk-form input:disabled {
+    background-color: #f0f0f0;
+    color: #777;
+    cursor: not-allowed;
+  }
+
+  .loader-container {
+    height: 90vh;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .loader-container-doc .loader{
+    width:0px;
+  }  
+  
+  .submit-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+  
+  .attachment-note{
+    align-self: center;
+    font-size: small;
+  }
+  .label-tight {
+    margin-bottom: -8px !important;
+    font-size:13px;
+    font-weight: 400;
+  }

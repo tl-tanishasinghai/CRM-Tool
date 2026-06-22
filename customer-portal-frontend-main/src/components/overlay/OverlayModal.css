@@ -1,0 +1,49 @@
+/* OverlayModal.css */
+.overlay-backdrop {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px; /* allows breathing room on mobile */
+    box-sizing: border-box;
+    z-index: 9999;
+    overflow: auto; /* key to enable scrolling inside overlay */
+  }
+  
+  .overlay-modal {
+    background: white;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh; /* prevents modal from going beyond screen */
+    overflow-y: auto; /* enables scroll inside modal */
+    border-radius: 12px;
+    padding: 24px;
+    position: relative;
+    box-sizing: border-box;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    scroll-behavior: smooth;
+  }
+
+  .overlay-modal::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  .overlay-modal::-webkit-scrollbar-thumb {
+    background-color: #ccc;
+    border-radius: 4px;
+  }
+  
+  .overlay-close-btn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 24px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+  }
+  

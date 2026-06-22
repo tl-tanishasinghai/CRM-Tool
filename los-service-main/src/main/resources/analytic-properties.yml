@@ -1,0 +1,5 @@
+analytic-service:
+  api:
+    name-similarity: /api/v1/name-similarity
+    face-similarity: /api/v1/face-similarity
+    address-similarity: /api/v1/address-similarity

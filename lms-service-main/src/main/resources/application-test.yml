@@ -1,0 +1,170 @@
+server:
+  port: 8091
+  config:
+    import: m2p-properties.yml
+
+springdoc:
+  url: Local Server - Trillion Loans LMS
+  show-actuator: true
+  packagesToScan: com.trillionloans.lms.controller
+  swagger-ui:
+    path: /swagger-ui
+    enabled: true
+    operationsSorter: method
+    tags-sorter: alpha
+
+logging:
+  level:
+    root: INFO
+
+aws:
+  access-key: dummy-access-key
+  secret-key: dummy-secret-key
+  region: dummy-region
+  kms:
+    loanAgreementStorage: s3://dummy-bucket/loan-agreements
+    nocStorage: s3://dummy-bucket/noc
+    riskDataSqs:
+      key: dummy-key
+    requestResponseLog: dummy-log
+
+s3:
+  bucket:
+    riskDataSqs: dummy-risk-queue
+    requestResponseLog: dummy-request-log
+    loanAgreementStorage: dummy-loan-agreement-storage
+    nocStorage: dummy-noc-bucket
+
+m2p:
+  fineract-tenant-id: lms-local
+  api:
+    ml:
+      fetch-document-url: http://localhost:8080/mock-m2p/fetch-document
+    base-url: http://localhost:8080/fineract-provider/api
+  auth:
+    token: dummy-m2p-token
+
+bharatpe:
+  api:
+    base-url: http://localhost:8081/bharatpe
+  headers:
+    client-id: DUMMY_CLIENT
+    client-secret: dummy-client-secret
+    Content-Type: application/json
+
+ninjacart:
+  api:
+    base-url: http://localhost:8082/ninjacart
+  headers:
+    Content-Type: application/json
+
+oto:
+  api:
+    base-url: http://localhost:8083/otocapital
+  headers:
+    Content-Type: application/json
+    Authorization: dummy-authorization-token
+
+advance-report-retry:
+  initial-backoff: PT30S
+  max-backoff: PT4M
+  max-with-exponential-backoff: 5
+
+kyc-adaptor:
+  api:
+    base-url: http://localhost:8084/kyc-adaptor
+    get-bu-gu: /mock/{loanId}
+
+transaction-service:
+  api:
+    base-url: http://localhost:8085/transaction-service
+    verify-bank: /v1/lead/{leadId}/verify-bank
+
+bharatpeemi:
+  api:
+    base-url: http://localhost:8086/bharatpe-emi
+  headers:
+    X-API-KEY: dummy-api-key
+    Content-Type: application/json
+
+sqs:
+  queue:
+    riskDataSqs: dummy-sqs-queue
+
+spring:
+  redis:
+    host: localhost
+    database: 0
+    port: 6379
+    password: ''
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/los
+    username: postgres
+    password: postgres
+  kafka:
+    producer:
+      compression-type: none
+    bootstrap-servers: localhost:9092
+    producer.acks: all
+    producer.max-request-size: '50000000'
+    producer.request-timeout-ms: '3000'
+    producer.max-block-ms: '3000'
+    topic:
+      logging: lms-logs-local
+
+transaction:
+  api:
+    base-url: http://localhost:8087/transaction
+    auto-disburse: /v1/payout/transfers
+    get-auto-disburse-status: /v1/payout/transfers/{loanId}
+
+bank-txn:
+  api:
+    base-url: http://localhost:8088/bank-txn
+
+notification-service:
+  portal-link: http://localhost:8089/portal
+  batchSize: 5
+  restructure:
+    sms-trigger-enabled: false
+  api:
+    base-url: http://localhost:8095
+    send-sms: /mock/send-notification
+  templates:
+    loan-agreement-delivery-scheduler-days: 7
+    loan-agreement-delivery-template: dummy-loan-agreement-template
+    welcome-sms-template: dummy-welcome-template
+    open-dpd-loan-template: dummy-open-dpd-template
+    loan-closure-template: dummy-loan-closure-template
+    noc-delivery-template: dummy-noc-template
+    loan-closure-scheduler-days: 0
+    noc-delivery-scheduler-days: 0
+    lead-acknowledgement-template: dummy-lead-ack-template
+
+environment:
+  name: local
+
+nexus:
+  api:
+    base-url: http://localhost:8090/nexus
+    get-color-code: /mock/fetch
+  templates:
+    lead-acknowledgement-template: local
+
+karza:
+  key: dummy-karza-key
+  api:
+    base-url: http://localhost:8091/karza
+    pan-aadhaar: /mock/pan-aadhaar-link
+
+risk-service:
+  api:
+    base-url: http://localhost:8092/risk-service
+
+encryption:
+  key: dummy-encryption-key
+  algorithm: AES
+
+notification:
+  kafka:
+    topic: loan-notifications-local

@@ -1,0 +1,180 @@
+name: 'Non-Prod: Build & Deploy to ArgoCD'
+run-name: "Deploy [${{ inputs.target_env }}] - Branch: ${{ inputs.branch_name }}${{ inputs.specific_commit_hash }} by @${{ github.actor }}"
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_env:
+        type: choice
+        description: 'Select Target Environment'
+        options:
+          - qa
+          - stage
+        default: 'qa'
+      branch_name:
+        description: 'Branch name to build'
+        required: true
+        default: ''
+      specific_commit_hash:
+        description: 'Paste a specific SHA (Overrides branch)'
+        required: false
+        default: ''
+
+jobs:
+  # JOB 1: Docker Build and ECR Push
+  build-and-push:
+    runs-on: github-runners-devops
+    outputs:
+      image_tag: ${{ steps.set-tag.outputs.tag }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          # Priority: Manual Hash > Branch Name
+          ref: ${{ github.event.inputs.specific_commit_hash || github.event.inputs.branch_name }}
+          fetch-depth: 0
+
+      - name: Safety Validation
+        run: |
+          INPUT_BRANCH="${{ github.event.inputs.branch_name }}"
+          CUSTOM_HASH="${{ github.event.inputs.specific_commit_hash }}"
+          
+          echo "Validating inputs..."
+          if [ -n "$CUSTOM_HASH" ]; then
+            echo "Manual Hash detected. Skipping branch name checks."
+            echo "Validation Passed: Using SHA $CUSTOM_HASH"
+          else
+            if [[ "$INPUT_BRANCH" == "main" || "$INPUT_BRANCH" == "master" ]]; then
+              echo "ERROR: Directly typing 'main' in the branch field is not allowed."
+              echo "Please use staging, develop, or a feature branch."
+              exit 1
+            fi
+            echo "Validation Passed: Branch $INPUT_BRANCH is allowed for QA/Stage."
+          fi
+      - name: Assume role for ECR push (Account B)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::740154735441:role/arc-runner-ecr-access-role
+          role-session-name: arc-ecr-push
+          aws-region: ap-south-1
+          role-skip-session-tagging: true
+
+
+      - name: Assume role for ECR push (Account  354...)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::352484409731:role/arc-ecr-push-role-prod
+          role-session-name: arc-ecr-build-prod
+          aws-region: ap-south-1
+          role-skip-session-tagging: true
+          role-chaining: true
+
+      - name: Login to ECR (Account 352 - Base Images)
+        run: |
+          aws ecr get-login-password --region ap-south-1 | \
+          docker login --username AWS --password-stdin \
+          352484409731.dkr.ecr.ap-south-1.amazonaws.com
+
+      - name: Set image tag
+        id: set-tag
+        run: |
+          TAG=$(git rev-parse --short HEAD)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Build Docker image
+        run: |
+          IMAGE="${{ vars.NP_ECR_URI }}:${{ env.IMAGE_TAG }}"
+          docker build -t "$IMAGE" .
+
+
+      - name: Assume role for going back to DevOps Prod (740 ..)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::740154735441:role/arc-runner-ecr-access-role
+          role-session-name: arc-ecr-push
+          aws-region: ap-south-1
+          role-skip-session-tagging: true
+
+
+      - name: Assume role for ECR push (Account  9750...)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::975050098564:role/arc-ecr-push-role
+          role-session-name: arc-ecr-push-stage
+          aws-region: ap-south-1
+          role-skip-session-tagging: true
+          role-chaining: true
+
+      - name: Verify identity (Account B)
+        run: aws sts get-caller-identity
+
+      - name: Login to Amazon ECR
+        run: |
+          REGISTRY=$(echo "${{ vars.NP_ECR_URI }}" | cut -d'/' -f1)
+          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $REGISTRY
+
+      - name: Push Docker image
+        run: |
+          IMAGE="${{ vars.NP_ECR_URI }}:${{ env.IMAGE_TAG }}"
+          docker push "$IMAGE"
+
+      - name: Build Summary
+        run: |
+          IMAGE="${{ vars.NP_ECR_URI }}:${{ env.IMAGE_TAG }}"
+          echo "## 🚀 Build & Deploy Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Key | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🐳 Image | $IMAGE |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🏷 Image Tag | $IMAGE_TAG |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌿 Selected Branch | ${{ github.event.inputs.branch_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔐 Selected SHA (if any) | ${{ github.event.inputs.specific_commit_hash || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧾 Actual Commit Built | $(git rev-parse HEAD) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌎 Target Environment | ${{ github.event.inputs.target_env }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 👤 Triggered By | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+
+  # JOB 2: GitOps Manifest Update
+  deploy-to-gitops:
+    needs: build-and-push
+    runs-on: github-runners-devops
+    environment: ${{ github.event.inputs.target_env }}
+    steps:
+      - name: Update GitOps Manifests
+        env:
+          GITOPS_PAT: ${{ secrets.GITOPS_PAT }}
+          TARGET_ENV: ${{ github.event.inputs.target_env }}
+          SERVICE_NAME: ${{ github.event.repository.name }}
+          TRIGGER_USER: ${{ github.actor }}
+          USER_EMAIL: ${{ github.event.sender.email }}
+          IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
+        run: |
+          git clone "https://oauth2:${GITOPS_PAT}@github.com/trillionloans/tl-gitops-cicd.git"
+          cd tl-gitops-cicd
+          
+          FILE_PATH="$TARGET_ENV/$SERVICE_NAME/values.yaml"
+          
+          if [ -f "$FILE_PATH" ]; then
+            # Using pre-installed yq on runner
+            yq -i ".image.tag = \"$IMAGE_TAG\"" "$FILE_PATH"
+          
+            # Identity Attribution with fallback
+            FINAL_EMAIL="${USER_EMAIL:-${TRIGGER_USER}@users.noreply.github.com}"
+            git config user.name "$TRIGGER_USER"
+            git config user.email "$FINAL_EMAIL"
+          
+            if [[ -n $(git status -s) ]]; then
+              git add "$FILE_PATH"
+              git commit -m "deploy($TARGET_ENV): $SERVICE_NAME to $IMAGE_TAG by @$TRIGGER_USER"
+              git push origin main
+              echo "GitOps repo updated successfully."
+            else
+              echo "No changes detected, image tag already matches."
+            fi
+          else
+            echo "Error: $FILE_PATH not found in GitOps repo."
+            exit 1
+          fi

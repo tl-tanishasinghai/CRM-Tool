@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bre-config-los-service-prd-apps
+data:
+  scienaptic.api.BPBL1_FRESH: /v1/flow-220598512?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+  scienaptic.api.BPBL1_REPEAT: /v1/flow-180367504?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+  scienaptic.api.ELO_FRESH: /v1/flow-309756112?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+  scienaptic.api.ELO_REPEAT: /v1/flow-309764304?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+  scienaptic.api.ELO_TOPUP: /v1/flow-227979368?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+  scienaptic.api.NINJ3_NEW: /v1/flow-273719352?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+  scienaptic.api.NINJ3_REPEAT: /v1/flow-273719352?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+  scienaptic.api.NINJ4_NEW: /v1/flow-386338976?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+  scienaptic.api.NINJ5_NEW: /v1/flow-386338976?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+  scienaptic.api.OTOVL_NEW: /v1/flow-123187320?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+  scienaptic.api.PLO1_FRESH: /v1/flow-412184736?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+  scienaptic.api.SAVE1_FRESH: /v1/flow-265216040?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+  scienaptic.api.base-url: https://scienaptic.trillionloans.com/evaluator/flow
+  scienaptic.auth.token.BPBL1_FRESH: 6UxDZzhg5TzT4qIpBDj9lve2aHL8mxoboj3_HbA2RJ_0VGl_fmfswPEReE-HHtcL3iBxmcPmTpT3ELKhodO7TA==
+  scienaptic.auth.token.BPBL1_REPEAT: saZvboL9FbKFBDADOzCHrXNBR_ct4RBppUjv8Ixs4naXY4hHm5W3QK32TYrFPncMockUjeFGc_QxQvyIOhjMOA==
+  scienaptic.auth.token.ELO_FRESH: G-d1ojovNWOYxK2G-UmkUsh7oE2MAGSUgUTsmCoAvjxhA_dkC_UHqGEfkltEmikL64rbsaK97lx1vMxVpiSt_A==
+  scienaptic.auth.token.ELO_REPEAT: w4aWr_xFFkIO4jz0qmf8DF99wB9fNaTYjLRSmAfKOR8jTafbKd3EXYR9x7c3HansUTN9QgaiHAB3VW7AIZHVlw==
+  scienaptic.auth.token.ELO_TOPUP: Vt2i1N1iZOriZbuX2DFhO-OpO4J1OwAXt5fYiQ5-ZyqqWo7FpzwE1fqlNodVgb_Rr3B3DFNrlVnPAf-xoABxeQ==
+  scienaptic.auth.token.NINJ3_NEW: zgxuiXRzCF7V5mRRGqIwU4vmV4SuJLKv1LNAehR39clQ9axGJ-JNkLDqzVAmtUOUgRv9fPYeo39jXQ0_hZnbSw==
+  scienaptic.auth.token.NINJ3_REPEAT: zgxuiXRzCF7V5mRRGqIwU4vmV4SuJLKv1LNAehR39clQ9axGJ-JNkLDqzVAmtUOUgRv9fPYeo39jXQ0_hZnbSw==
+  scienaptic.auth.token.NINJ4_NEW: 5nLvDrFjLlzqlk62PvRNkdTOSGXhWeDskWBCCFNKEg9UxV642dZZItNJwHw30Zc-T555fLcRa_HlYN0ZrrUkMA==
+  scienaptic.auth.token.NINJ5_NEW: 5nLvDrFjLlzqlk62PvRNkdTOSGXhWeDskWBCCFNKEg9UxV642dZZItNJwHw30Zc-T555fLcRa_HlYN0ZrrUkMA==
+  scienaptic.auth.token.OTOVL_NEW: fMxMfFpM3gX9osMctelTxqRXNvV1jEWqnvn1kiajatkPPPVMzvdQIy9MFCr7dHAIjjKUeAFxuDdyOBE6SJQ7dA==
+  scienaptic.auth.token.PLO1_FRESH: vt9-k9j0htnY3Ce95SfoN2QGw17v1kJ__4ypMwP6y-fd2eJ77_1sKDza_QT4kk-NoAGYYFDK83KbLDXMz3iarg==
+  scienaptic.auth.token.SAVE1_FRESH: xIAbBruY9lvZJEL38Jktz-8DbuFWWTj_lpnWkRiZPofb-DnyWlZj-nPW7LHJdDi4j4v8bG5GePsvJDDGXMI4RA==
+  scienaptic.config.callback-retry: '3'

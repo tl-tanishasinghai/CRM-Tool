@@ -1,0 +1,10 @@
+collection-service:
+  api:
+    create-payment:
+      endpoint: /payments/api/v1/customer/{clientId}/loan-account/{loanAccountNumber}/create-payment
+    collection-status:
+      endpoint: /payments/api/v1/loan-account/{loanAccountNumber}/collection-status/{collectionId}
+    collection-details:
+      endpoint: /payments/api/v1/loan-account/{loanAccountNumber}/get-collection-details
+    latest-collection:
+        endpoint: /payments/api/v1/loan-account/{loanAccountNumber}/get-latest-collection

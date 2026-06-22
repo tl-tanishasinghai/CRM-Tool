@@ -1,0 +1,72 @@
+name: Production Restart Deployment
+permissions:
+  id-token: write
+  contents: read
+on:
+  workflow_dispatch:
+    inputs:
+      namespace:
+        description: 'Environment'
+        required: true
+        default: 'prd-apps' # Ensure this matches one of the options below
+        type: choice
+        options:
+          - prd-apps
+      cmr_ticket:
+        description: 'Enter CMR / DevOps Ticket Number'
+        required: true
+        default: ''
+
+jobs:
+  rollout-restart:
+    runs-on: github-runners-devops
+    steps:
+      - name: "Step 0: Restrict who can run"
+        run: |
+            ALLOWED_USERS=("urvashi-ahuja" "atulagrawal99" "nikhilsinghal-tn" "nishant-tl" "Shubham-tl" "rohit-alam-ext" "chiragmaini04")  
+            AUTHORIZED=false
+            for user in "${ALLOWED_USERS[@]}"; do
+              if [[ "$user" == "$GITHUB_ACTOR" ]]; then
+                AUTHORIZED=true
+                break
+              fi
+            done
+            if [[ "$AUTHORIZED" != true ]]; then
+              echo "❌ You are not allowed to run this workflow"
+              exit 1
+            fi
+      - name: "Step 1: Checkout Code"
+        uses: actions/checkout@v4
+
+      - name: "Step 2: Assume role for ECR push (Account 740154735441)"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::740154735441:role/arc-runner-ecr-access-role
+          role-session-name: arc-ecr-push
+          aws-region: ap-south-1
+          role-skip-session-tagging: true
+
+
+      - name: "Step 3: Assume role for ECR push (Account 352484409731)"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::352484409731:role/arc-ecr-push-role-prod
+          role-session-name: arc-ecr-build-prod
+          aws-region: ap-south-1
+          role-skip-session-tagging: true
+          role-chaining: true 
+
+
+      - name: "Step 4: Set kube context"
+        run: |
+          aws eks update-kubeconfig --region ap-south-1 --name ${{ vars.PROD_CLUSTER }}
+
+
+      - name: "Step 5: Trigger Rollout"
+        run: |
+          echo "Restarting deployment/${{ vars.APP_NAME }}-${{github.event.inputs.namespace}} in ${{ github.event.inputs.namespace }}..."
+          kubectl rollout restart deployment/${{ vars.APP_NAME }}-${{github.event.inputs.namespace}} -n ${{ github.event.inputs.namespace }}
+
+      - name: "Step 6: Verify Health"
+        run: |
+          kubectl rollout status deployment/${{ vars.APP_NAME }}-${{github.event.inputs.namespace}} -n ${{ github.event.inputs.namespace }} --timeout=2m

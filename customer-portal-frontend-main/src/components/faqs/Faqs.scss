@@ -1,0 +1,29 @@
+.home-container {
+    display: flex;
+    width: 752px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin: 40px auto; /* Center the container */
+    padding: 20px;
+    background-color: #fcfcfc; /* Updated background color */
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    .home-container {
+      width: 80%;
+      padding: 10px;
+      max-width: fit-content;
+    }
+}
+  
+
+@media (max-width: 480px) {
+    .home-container {
+      padding: 15px;
+    }
+
+}

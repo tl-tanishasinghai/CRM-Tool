@@ -1,0 +1,31 @@
+server:
+  port: 8091
+logging:
+  level:
+    root: INFO
+reactor:
+  netty:
+    http:
+      server:
+        forwarded:
+          strictValidation: false
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+  config:
+    import: los-properties.yml, lms-properties.yml, logo-properties.yml, authorization-service-properties.yml, collection-service-properties.yml
+  codec:
+    max-in-memory-size: 10MB
+  servlet:
+    multipart:
+      max-request-size: 10MB
+web-client:
+  max-idle-time: 60
+  max-life-time: 120
+  pending-acquire-timeout: 60
+  evict-background: 120
+  retry-backoff: 250
+  acquire-max-count: 256
+migration:
+  switch: false

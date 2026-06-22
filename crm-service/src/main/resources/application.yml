@@ -1,0 +1,44 @@
+server:
+  port: 8092
+
+spring:
+  application:
+    name: crm-service
+  jpa:
+    hibernate:
+      ddl-auto: none
+  datasource:
+    url: ${CRM_DB_URL:jdbc:postgresql://localhost:5432/crm}
+    username: ${CRM_DB_USER:postgres}
+    password: ${CRM_DB_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      mode: never
+
+management:
+  endpoint:
+    health:
+      show-details: when_authorized
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+crm:
+  integrations:
+    los-base-url: ${LOS_SERVICE_BASE_URL:http://localhost:8090}
+    lms-base-url: ${LMS_SERVICE_BASE_URL:http://localhost:8091}
+    customer-portal-base-url: ${CUSTOMER_PORTAL_BASE_URL:http://localhost:8091}
+    product-code: ${CRM_PRODUCT_CODE:bharatpe}
+    use-live-data: ${CRM_USE_LIVE_DATA:true}
+    exotel:
+      base-url: ${EXOTEL_BASE_URL:https://api.exotel.com}
+      account-sid: ${EXOTEL_ACCOUNT_SID:}
+      api-key: ${EXOTEL_API_KEY:}
+      api-token: ${EXOTEL_API_TOKEN:}
+      page-size: ${EXOTEL_PAGE_SIZE:100}
+      daily-cron: ${EXOTEL_DAILY_CRON:0 0 1 * * *}
+    freshdesk:
+      base-url: ${FRESHDESK_BASE_URL:}
+      api-key: ${FRESHDESK_API_KEY:}

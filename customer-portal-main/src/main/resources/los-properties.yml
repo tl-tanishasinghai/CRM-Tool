@@ -1,0 +1,18 @@
+los:
+  api:
+    leadId-details:
+      endpoint: /partners/api/v1/lead/cp/{leadId}
+    get-lead-against-mobileNumber:
+      endpoint: /partners/api/v1/lead/info/{mobileNumber}
+    get-lead-against-mobileNumber-dob:
+      endpoint: /partners/api/v1/lead/info/{mobileNumber}/{dateOfBirth}
+    get-lead-against-mobileNumber-dob-pan:
+      endpoint: /partners/api/v1/lead/info/{mobileNumber}/{dateOfBirth}/{panLast4Digits}
+    get-document:
+      endpoint: /partners/api/v1/loan/application/{loanApplicationId}/document/{documentId}
+    get-all-documents:
+      endpoint: /partners/api/v1/loan/{loanApplicationId}/documents
+    get-all-loanApplicationIds:
+      endpoint: /partners/api/v1/lead/{leadId}/details
+    fetch-cpRpsLoanDetails:
+      endpoint: /partners/api/v1/lead/cp/rps/{leadId}/accounts/{accountNo}

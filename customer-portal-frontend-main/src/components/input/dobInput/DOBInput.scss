@@ -1,0 +1,55 @@
+.dob-input {
+    margin-top: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-family: sans-serif;
+  
+    &__fields {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+  
+    &__field {
+      width: 40px;
+      height: 40px;
+      padding: 6px 8px;
+      font-size: 16px;
+      text-align: center;
+      border: 1px solid #8692a6;
+      border-radius: 4px;
+      outline: none;
+  
+      &:focus {
+        border-color: #007bff;
+      }
+    }
+  
+    &__separator {
+      font-size: 16px;
+      margin: 0 2px;
+    }
+  
+    &__error {
+      margin-top: 8px;
+      color: #d9534f;
+      font-size: 14px;
+    }
+  }
+  .year-input{
+    width: 54px;
+  }
+
+  @media screen and (max-width: 767px) {
+    .dob-input {
+      &__field {
+        width: 48px;
+        height: auto;
+        padding: 16px 10px;
+        font-size: 16px;
+      }
+    }
+  }
+  

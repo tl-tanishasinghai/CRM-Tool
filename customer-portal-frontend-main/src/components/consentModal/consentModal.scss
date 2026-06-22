@@ -1,0 +1,96 @@
+.consent-wrapper{
+  display:flex;
+  flex-direction:column;
+  align-items: center;
+  gap:40px;
+  padding:20px;
+}
+
+.consent-header{
+  margin-top:0px; 
+  text-align: center;
+}
+
+.consent-row{
+  display:flex;
+  flex-direction:row;
+}
+
+.consent-button-row{
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  width:70%;
+  padding:20px;
+}
+
+.consent-row-text{
+text-align:center;
+}
+.primary-btn , .secondary-btn{
+  margin: 0 auto;            // forces the button itself to center
+  border: 2px solid black;
+  padding: 10px 15px; 
+  cursor:pointer;
+}
+
+.primary-btn:hover, .secondary-btn:hover{
+  background-color: #007bff;
+  color: white;
+  transition: 0.2s ease;
+}
+
+.policy-text{
+  display:flex;
+  flex-direction:row;
+  justify-content: center;
+}
+
+.modal-overlay {
+  opacity: 0;
+  animation: fadeIn 0.4s ease forwards;   // 👈 fade-in animation
+}
+
+.modal-content {
+  transform: scale(0.9);
+  opacity: 0;
+  animation: popIn 0.3s ease forwards 0.2s; // 👈 slight pop-in delay
+  border: 2px solid black;
+  border-radius: 0px;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes popIn {
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 576px) {
+  .consent-wrapper{
+    gap:30px;
+
+    .consent-header{
+      margin-bottom:auto;
+    }
+  }
+  .policy-text, .consent-row-text{
+      font-size: 13px;
+  }
+  .primary-btn, .secondary-btn{
+      padding: 5px 10px;
+  }
+
+}
+
+@media (max-width: 360px) {
+  .policy-text{
+    font-size:12px;
+  }
+}

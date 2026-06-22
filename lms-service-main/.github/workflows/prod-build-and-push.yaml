@@ -1,0 +1,315 @@
+name: 'Production: Build & Deploy to ArgoCD'
+run-name: "Deploy [${{ inputs.target_env }}] - Branch: ${{ inputs.branch_name }}${{ inputs.specific_commit_hash }} by @${{ github.actor }}"
+permissions:
+    id-token: write
+    contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_env:
+        type: choice
+        description: 'Select Target Environment'
+        options:
+          - prod
+        default: 'prod'
+      branch_name:
+        description: 'Branch name to build'
+        required: true
+        default: ''
+      specific_commit_hash:
+        description: 'Paste a specific SHA (Overrides branch)'
+        required: false
+        default: ''
+      cmr_ticket:
+        description: 'Enter CMR Ticket Number'
+        required: true
+        default: ''
+      Select QA for sign-off:
+        type: choice
+        options:
+          - Karan Mehta
+          - Aaditya Saxena
+          - Roshni Soni
+          - Kushiram
+          - Yash Garg
+          - Aparna Gupta
+          - No QA Needed
+jobs:
+  # JOB 1: Docker Build and ECR Push
+  build-and-push:
+    runs-on: github-runners-devops
+    outputs:
+      image_tag: ${{ steps.set-tag.outputs.tag }}
+    steps:
+      - name: "Step 0: Restrict who can run"
+        run: |
+            ALLOWED_USERS=("urvashi-ahuja" "atulagrawal99" "nikhilsinghal-tn" "nishant-tl" "Shubham-tl" "rohit-alam-ext" "chiragmaini04")  
+            AUTHORIZED=false
+            for user in "${ALLOWED_USERS[@]}"; do
+              if [[ "$user" == "$GITHUB_ACTOR" ]]; then
+                AUTHORIZED=true
+                break
+              fi
+            done
+            if [[ "$AUTHORIZED" != true ]]; then
+              echo "❌ You are not allowed to run this workflow"
+              exit 1
+            fi
+      - name: "Step 1: Checkout Code"
+        uses: actions/checkout@v4
+        with:
+          # Priority: Manual Hash > Branch Name
+          ref: ${{ github.event.inputs.specific_commit_hash || github.event.inputs.branch_name }}
+          fetch-depth: 0
+
+      - name: "Step 2: Assume role for ECR push (Account 740154735441)"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::740154735441:role/arc-runner-ecr-access-role
+          role-session-name: arc-ecr-push
+          aws-region: ap-south-1
+          role-skip-session-tagging: true
+
+      - name: "Step 3: Assume role for ECR push (Account 352484409731)"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::352484409731:role/arc-ecr-push-role-prod
+          role-session-name: arc-ecr-build-prod
+          aws-region: ap-south-1
+          role-skip-session-tagging: true
+          role-chaining: true 
+
+      - name: "Step 4: Login to ECR (Account - 352484409731)"
+        run: |
+          aws ecr get-login-password --region ap-south-1 | \
+          docker login --username AWS --password-stdin \
+          352484409731.dkr.ecr.ap-south-1.amazonaws.com
+
+      - name: "Step 5: Print CMR Ticket"
+        run: |
+          echo "=============================="
+          echo "CMR Ticket: ${{ github.event.inputs.cmr_ticket }}"
+          echo "=============================="
+
+      - name: "Step 6: Validate CMR Approval from Jira"
+        env:
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_EMAIL: ${{ secrets.JIRA_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          CMR_TICKET: ${{ github.event.inputs.cmr_ticket }}
+        run: |
+          echo "======================================"
+          echo "Validating Jira ticket: $CMR_TICKET"
+          echo "======================================"
+
+          ISSUE_KEY=$(echo "$CMR_TICKET" | grep -oE 'CMR-[0-9]+')
+
+          if [ -z "$ISSUE_KEY" ]; then
+            echo "❌ Invalid CMR ticket format. Expected: CMR-XXX"
+            exit 1
+          fi
+
+          echo "Extracted Issue Key: $ISSUE_KEY"
+
+          RESPONSE=$(curl -s -u "$JIRA_EMAIL:$JIRA_API_TOKEN" \
+            -H "Accept: application/json" \
+            "$JIRA_BASE_URL/rest/api/3/issue/$ISSUE_KEY/comment")
+
+          if [ -z "$RESPONSE" ] || [[ "$RESPONSE" == *"errorMessages"* ]]; then
+            echo "❌ Failed to fetch Jira ticket"
+            echo "$RESPONSE"
+            exit 1
+          fi
+
+          APPROVERS=(
+            "Nishant Sharma"
+            "Urvashi Ahuja"
+            "Atul Agrawal"
+            "Nikhil Singhal"
+          )
+
+          echo "🔍 Scanning comments for approval..."
+
+          APPROVED=false
+          APPROVED_BY=""
+          COMMENT_COUNT=$(echo "$RESPONSE" | jq '.comments | length')
+
+          for ((i=0; i<COMMENT_COUNT; i++)); do
+            AUTHOR=$(echo "$RESPONSE" | jq -r ".comments[$i].author.displayName")
+
+            # Extract full comment text safely
+            BODY=$(echo "$RESPONSE" | jq -r ".comments[$i].body.content[].content[].text" 2>/dev/null | tr '\n' ' ')
+
+            echo "Checking: $AUTHOR -> $BODY"
+
+            for APPROVER in "${APPROVERS[@]}"; do
+              if [[ "$AUTHOR" == "$APPROVER" && "$BODY" == *"Approved"* ]]; then
+                echo "✅ Approval found from $AUTHOR"
+                APPROVED=true
+                APPROVED_BY="$AUTHOR"
+                break 2
+              fi
+            done
+          done
+
+          if [ "$APPROVED" != "true" ]; then
+            echo "❌ No valid approval found from authorized approvers"
+            exit 1
+          fi
+          echo "APPROVED_BY=$APPROVED_BY" >> $GITHUB_ENV
+          echo "======================================"
+          echo "✅ CMR approval validation passed"
+          echo "======================================"
+
+      - name: "Step 7: Set image tag"
+        id: set-tag
+        run: |
+          TAG=$(git rev-parse --short HEAD)
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "IMAGE_TAG=$TAG" >> $GITHUB_ENV
+
+      - name: "Step 8: Build Docker image"
+        run: |
+          IMAGE="${{ vars.PROD_ECR_URI }}:${{ env.IMAGE_TAG }}"
+          docker build -t "$IMAGE" .
+
+      - name: "Step 9: Verify identity (Account - 352484409731)"
+        run: aws sts get-caller-identity
+
+      - name: "Step 10: Login to Amazon ECR"
+        run: |
+          REGISTRY=$(echo "${{ vars.PROD_ECR_URI }}" | cut -d'/' -f1)
+          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin $REGISTRY
+
+      - name: "Step 11: Push Docker image"
+        run: |
+          IMAGE="${{ vars.PROD_ECR_URI }}:${{ env.IMAGE_TAG }}"
+          docker push "$IMAGE"
+
+      - name: "Step 12: Build Summary"
+        run: |
+          IMAGE="${{ vars.PROD_ECR_URI }}:${{ env.IMAGE_TAG }}"
+          echo "## 🚀 Build & Deploy Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Key | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| 🐳 Image | $IMAGE |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🏷 Image Tag | $IMAGE_TAG |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌿 Selected Branch | ${{ github.event.inputs.branch_name }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔐 Selected SHA (if any) | ${{ github.event.inputs.specific_commit_hash || 'N/A' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧾 Actual Commit Built | $(git rev-parse HEAD) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🌎 Target Environment | ${{ github.event.inputs.target_env }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| 👤 Triggered By | ${{ github.actor }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: "Step 13: Send Build Summary to Slack"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          IMAGE_TAG: ${{ env.IMAGE_TAG }}
+          IMAGE: ${{ vars.PROD_ECR_URI }}:${{ env.IMAGE_TAG }}
+          BRANCH: ${{ github.event.inputs.branch_name }}
+          COMMIT: ${{ github.event.inputs.specific_commit_hash || github.sha }}
+          ENVIRONMENT: ${{ github.event.inputs.target_env }}
+          ACTOR: ${{ github.actor }}
+          CMR: ${{ github.event.inputs.cmr_ticket }}
+          APPROVED_BY: ${{ env.APPROVED_BY }}
+          QA_SIGNOFF: ${{ github.event.inputs['Select QA for sign-off'] }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          echo "Sending Slack notification..."
+
+          # Extract service name from repo
+          SERVICE_NAME="${GITHUB_REPOSITORY#*/}"
+
+          # IST Time
+          CURRENT_TIME=$(TZ="Asia/Kolkata" date '+%Y-%m-%d %H:%M:%S IST')
+
+          PAYLOAD=$(cat <<EOF
+          {
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": ":rocket: *New Production Deployment Triggered - ${SERVICE_NAME}*"
+                }
+              },
+              {
+                "type": "context",
+                "elements": [
+                  {
+                    "type": "mrkdwn",
+                    "text": ":date: $CURRENT_TIME"
+                  }
+                ]
+              },
+              {
+                "type": "divider"
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Environment:*\n$ENVIRONMENT\n\n*CMR Ticket:*\n<https://trillionloans.atlassian.net/browse/$CMR|$CMR>\n\n*CMR Approved By:*\n${APPROVED_BY:-Unknown}\n\n*QA Sign-off By:*\n${QA_SIGNOFF}\n\n*Branch:*\n$BRANCH\n\n*Commit:*\n$COMMIT\n\n*Image Tag:*\n$IMAGE_TAG\n\n*Triggered By:*\n@$ACTOR"
+                }
+              },
+              {
+                "type": "divider"
+              },
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*Workflow Run:*\n<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Deployment Details>"
+                }
+              }
+            ]
+          }
+          EOF
+          )
+
+          curl -X POST -H 'Content-type: application/json' \
+            --data "$PAYLOAD" \
+            $SLACK_WEBHOOK_URL
+
+  # JOB 2: GitOps Manifest Update
+  deploy-to-gitops:
+    needs: build-and-push
+    runs-on: github-runners-devops
+    environment: ${{ github.event.inputs.target_env }} 
+    steps:
+      - name: Update GitOps Manifests
+        env:
+          GITOPS_PAT: ${{ secrets.GITOPS_PAT }}
+          TARGET_ENV: ${{ github.event.inputs.target_env }}
+          SERVICE_NAME: ${{ github.event.repository.name }}
+          TRIGGER_USER: ${{ github.actor }}
+          USER_EMAIL: ${{ github.event.sender.email }}
+          IMAGE_TAG: ${{ needs.build-and-push.outputs.image_tag }}
+        run: |
+          git clone "https://oauth2:${GITOPS_PAT}@github.com/trillionloans/tl-gitops-cicd.git"
+          cd tl-gitops-cicd
+          
+          FILE_PATH="$TARGET_ENV/$SERVICE_NAME/values.yaml"
+          
+          if [ -f "$FILE_PATH" ]; then
+            # Using pre-installed yq on runner
+            yq -i ".image.tag = \"$IMAGE_TAG\"" "$FILE_PATH"
+            
+            # Identity Attribution with fallback
+            FINAL_EMAIL="${USER_EMAIL:-${TRIGGER_USER}@users.noreply.github.com}"
+            git config user.name "$TRIGGER_USER"
+            git config user.email "$FINAL_EMAIL"
+            
+            if [[ -n $(git status -s) ]]; then
+              git add "$FILE_PATH"
+              git commit -m "deploy($TARGET_ENV): $SERVICE_NAME to $IMAGE_TAG by @$TRIGGER_USER"
+              git push origin main
+              echo "GitOps repo updated successfully."
+            else
+              echo "No changes detected, image tag already matches."
+            fi
+          else
+            echo "Error: $FILE_PATH not found in GitOps repo."
+            exit 1
+          fi

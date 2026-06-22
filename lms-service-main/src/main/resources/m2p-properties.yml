@@ -1,0 +1,60 @@
+m2p:
+  api:
+    ml:
+      fetch-document-url: /v1/loanapplication/{loanApplicationId}/documents/{documentId}/attachment
+      repayment-schedule: /v1/loans/{id}
+      fetch-transaction-details: /v1/loans/{id}
+      foreclosure-details: /v1/loans/{loanAccountNumber}/transactions/template
+      execute-foreclosure: /v1/loans/{loanAccountNumber}/transactions/foreclosure
+      execute-credit-line-foreclosure: /v1/revolving-credit-lines/{loanAccountNumber}/transactions/{transactionId}/foreclosure
+      mark-collection: /v1/loans/{loanAccountNumber}/transactions
+      add-charge: /v1/loans/{loanAccountNumber}/charges/add-charge
+      charges: /v1/loans/{loanAccountNumber}
+      get-charge-details: /v1/loans/{loanAccountNumber}/charges
+      waive-charge: /v2/loans/{loanAccountNumber}/charges/{chargeId}/waive
+      collect-charge: /v1/loans/{loanAccountNumber}/charge-payment/{chargeType}
+      fetch-soa: /v1/runreports/Loan Statement Of Account
+      reject-loan: /v1/loans/{loanAccountNumber}
+      fetch-noc: /v1/runreports/NOC
+      upload-document: /v1/loans/{loanId}/documents
+      part-repayment: /v1/loans/{loanAccountNumber}/part-payment
+      loan-summary: /v1/loans/{id}
+      due-amount-as-date: /v1/loans/{loanAccountNumber}/due-ason
+      charge-by-external-id: /v1/external-reference/loan-charges/{chargeExternalId}
+      credit-line-mark-repayment: /v3/revolving-credit-lines/{account_number}/transactions/payin
+      ## gives all txns
+      get-credit-line-all-transaction-details: /v1/revolving-credit-lines/{loanAccountNumber}/transactions
+      ## gives approved txns (active ones)
+      get-credit-line-active-transaction-details: /v1/revolving-credit-lines/{loanAccountNumber}/transactions/flexi-pay
+      foreclosure-details-v2: /v1/revolving-credit-lines-template/{loanAccountNumber}/foreclosure/{emiTransactionId}
+      get-tentative-restructured-rps: /v1/rescheduleloans/{requestId}
+      initiate-reschedule: /v1/rescheduleloans
+      approve-reschedule: /v1/rescheduleloans/{requestId}
+      get-restructure-approval-details: /v1/rescheduleloans/{restructure_id}
+      partial-waive-template: /v2/loans/{loanId}/charges/partialwaivetemplate
+      partial-waiver: /v2/loans/{loanId}/charges/partialwaiver
+    reports:
+      get-closed-loans: /v2/runreports/closed_as_on_date/flatdata
+      lead-loan-details: /v2/runreports/leadloandata/flatdata
+      spend-convert-report-details: /v2/runreports/ExternalIdFetch/flatdata
+      fetch-daily-limit: /v2/runreports/FetchDisbursalLimit/flatdata
+      fetch-loan-details: /v2/runreports/fetch-lan-loan-details-external-id/flatdata
+      all-loans-due-as-date: /v2/runreports/PAYMENT_EXPECTED/flatdata
+      fetch-all-loan-details: /v2/runreports/fetch-loan-details-by-client-id/flatdata
+      get-active-loan-with-dpd: /v2/runreports/get-active-loan-with-dpd/flatdata
+      get-active-loan-with-dpd-details: /v2/runreports/get-active-loan-with-dpd-details/flatdata
+      get-new-created-loans-count: /v2/runreports/get-new-created-loans-count/flatdata
+      get-new-created-loans-details: /v2/runreports/get-new-created-loans-details/flatdata
+      get-overdue-emi-reports: /v2/runreports/overdue-emi-reports/flatdata
+      get-loan-agreement-details: /v2/runreports/get-loan-agreement-details/flatdata
+      get-historical-ckyc-recipients: /v2/runreports/get-historical-ckyc-recipients/flatdata
+      get-ckyc-recipients: /v2/runreports/get-ckyc-recipients/flatdata
+      get-lan-details: /v2/runreports/get-lan-details/flatdata
+      get-first-unpaid-installment: /v2/runreports/get-first-unpaid-installment-date/flatdata
+      get-excess-amount: /v2/runreports/get-excess-amount/flatdata
+      get-loan-agreement-details-one-day-back: /v2/runreports/get-loan-agreements-after-disbursal/flatdata
+      get-re-kyc-eligible-loans: /v2/runreports/get-re-kyc-eligible-loans/flatdata
+    advancereports:
+      generate-report: /v1/advancedreports
+      get-filelocationid-against-resourceid: /v1/advancedreports/{resourceid}
+      download-report-against-filelocationid: /v1/files/{fileLocationId}/download

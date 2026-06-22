@@ -1,0 +1,10 @@
+authorization-service:
+  api:
+    send-otp:
+      endpoint: /otp/send
+    resend-otp:
+      endpoint: /otp/resend
+    verify-otp:
+      endpoint: /otp/verify
+    logout-user:
+      endpoint: /otp/logout

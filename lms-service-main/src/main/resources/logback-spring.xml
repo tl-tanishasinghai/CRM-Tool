@@ -1,0 +1,11 @@
+<configuration>
+    <conversionRule conversionWord="mask" converterClass="com.trillionloans.lms.config.MaskingConverter" />
+    <appender name="mdcIncorporated" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS, Asia/Kolkata} [traceId=%X{traceId}] trace_id=%X{trace_id} span_id=%X{span_id} %p %c{1} - %mask(%msg) %n</pattern>
+        </encoder>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="mdcIncorporated"/>
+    </root>
+</configuration>

@@ -1,0 +1,6 @@
+digio:
+  api:
+    mandate-registration: /v3/client/mandate/create_form
+    fetch-mandate: /v3/client/mandate/{mandateId}
+    live-banks: /v3/client/mandate/banks
+    aml-pep-screening: /digio-aml/case-manager/client/v1/user/screen

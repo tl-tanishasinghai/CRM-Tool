@@ -1,0 +1,29 @@
+.modal-table-container{
+  padding: 20px 20px 0px 20px;
+
+  .modal-table-header {
+    display: flex;
+    margin-bottom: 20px;
+    justify-content: space-between;
+  }
+}
+
+.transaction-button {
+  cursor: pointer;
+}
+
+.no-transactions {
+  padding: 10px;
+  text-align: right;
+  width: 100%;
+  font-size: 16px;
+}
+
+@media (max-width: 768px) {
+  .no-transactions {
+    padding: 10px;
+    text-align: right;
+    width: 100%;
+    font-size: 12px;
+  }
+}

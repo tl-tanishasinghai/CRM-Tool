@@ -1,0 +1,274 @@
+{
+  "properties": [
+    {
+      "name": "springdoc.url",
+      "type": "java.lang.String",
+      "description": "Base url for swagger ui."
+    },
+    {
+      "name": "m2p.api.get-lead",
+      "type": "java.lang.String",
+      "description": "Description for m2p.api.get-lead."
+    },
+    {
+      "name": "bharatpe.api.qa-base-url",
+      "type": "java.lang.String",
+      "description": "Description for bharatpe.api.qa-base-url."
+    },
+    {
+      "name": "m2p.api.upload-documents",
+      "type": "java.lang.String",
+      "description": "Description for m2p.api.upload-documents."
+    },
+    {
+      "name": "m2p.api.get-loan",
+      "type": "java.lang.String",
+      "description": "Description for m2p.api.get-loan."
+    },
+    {
+      "name": "reactor.netty.http.server.forwarded.strictValidation",
+      "type": "java.lang.String",
+      "description": "Description for reactor.netty.http.server.forwarded.strictValidation."
+    },
+    {
+      "name": "bharatpe.headers.client-id",
+      "type": "java.lang.String",
+      "description": "Description for bharatpe.headers.client-id."
+    },
+    {
+      "name": "bharatpe.headers.client-secret",
+      "type": "java.lang.String",
+      "description": "Description for bharatpe.headers.client-secret."
+    },
+    {
+      "name": "bharatpe.headers.Content-Type",
+      "type": "java.lang.String",
+      "description": "Description for bharatpe.headers.Content-Type."
+    },
+    {
+      "name": "bharatpe.api.base-url",
+      "type": "java.lang.String",
+      "description": "Description for bharatpe.api.base-url."
+    },
+    {
+      "name": "m2p.cta.credit-line-creation.endpoint",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.credit-line-creation.endpoint."
+    },
+    {
+      "name": "m2p.cta.credit-line-creation.logger-header",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.credit-line-creation.logger-header."
+    },
+    {
+      "name": "m2p.cta.credit-line-creation.log-required",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.credit-line-creation.log-required."
+    },
+    {
+      "name": "m2p.cta.credit-line-creation.retry-count",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.credit-line-creation.retry-count."
+    },
+    {
+      "name": "m2p.cta.loan-creation.endpoint",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-creation.endpoint."
+    },
+    {
+      "name": "m2p.cta.loan-creation.logger-header",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-creation.logger-header."
+    },
+    {
+      "name": "m2p.cta.loan-creation.log-required",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-creation.log-required."
+    },
+    {
+      "name": "m2p.cta.loan-creation.retry-count",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-creation.retry-count."
+    },
+    {
+      "name": "m2p.cta.kyc-status.endpoint",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.kyc-status.endpoint."
+    },
+    {
+      "name": "m2p.cta.kyc-status.logger-header",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.kyc-status.logger-header."
+    },
+    {
+      "name": "m2p.cta.kyc-status.log-required",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.kyc-status.log-required."
+    },
+    {
+      "name": "m2p.cta.kyc-status.retry-count",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.kyc-status.retry-count."
+    },
+    {
+      "name": "m2p.cta.loan-documents-upload.endpoint",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-documents-upload.endpoint."
+    },
+    {
+      "name": "m2p.cta.loan-documents-upload.logger-header",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-documents-upload.logger-header."
+    },
+    {
+      "name": "m2p.cta.loan-documents-upload.log-required",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-documents-upload.log-required."
+    },
+    {
+      "name": "m2p.cta.loan-documents-upload.retry-count",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-documents-upload.retry-count."
+    },
+    {
+      "name": "m2p.cta.bre-status.endpoint",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.bre-status.endpoint."
+    },
+    {
+      "name": "m2p.cta.bre-status.logger-header",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.bre-status.logger-header."
+    },
+    {
+      "name": "m2p.cta.bre-status.log-required",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.bre-status.log-required."
+    },
+    {
+      "name": "m2p.cta.bre-status.retry-count",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.bre-status.retry-count."
+    },
+    {
+      "name": "m2p.cta.e-sign-status.endpoint",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.e-sign-status.endpoint."
+    },
+    {
+      "name": "m2p.cta.e-sign-status.logger-header",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.e-sign-status.logger-header."
+    },
+    {
+      "name": "m2p.cta.e-sign-status.log-required",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.e-sign-status.log-required."
+    },
+    {
+      "name": "m2p.cta.e-sign-status.retry-count",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.e-sign-status.retry-count."
+    },
+    {
+      "name": "m2p.cta.okyc-status.endpoint",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.okyc-status.endpoint."
+    },
+    {
+      "name": "m2p.cta.okyc-status.logger-header",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.okyc-status.logger-header."
+    },
+    {
+      "name": "m2p.cta.okyc-status.log-required",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.okyc-status.log-required."
+    },
+    {
+      "name": "m2p.cta.okyc-status.retry-count",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.okyc-status.retry-count."
+    },
+    {
+      "name": "m2p.cta.disbursement-trigger.endpoint",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.disbursement-trigger.endpoint."
+    },
+    {
+      "name": "m2p.cta.disbursement-trigger.logger-header",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.disbursement-trigger.logger-header."
+    },
+    {
+      "name": "m2p.cta.disbursement-trigger.log-required",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.disbursement-trigger.log-required."
+    },
+    {
+      "name": "m2p.cta.disbursement-trigger.retry-count",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.disbursement-trigger.retry-count."
+    },
+    {
+      "name": "m2p.cta.loan-documents-post-disbursal.endpoint",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-documents-post-disbursal.endpoint."
+    },
+    {
+      "name": "m2p.cta.loan-documents-post-disbursal.logger-header",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-documents-post-disbursal.logger-header."
+    },
+    {
+      "name": "m2p.cta.loan-documents-post-disbursal.log-required",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-documents-post-disbursal.log-required."
+    },
+    {
+      "name": "m2p.cta.loan-documents-post-disbursal.retry-count",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-documents-post-disbursal.retry-count."
+    },
+    {
+      "name": "m2p.cta.scienaptic-status.endpoint",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.scienaptic-status.endpoint."
+    },
+    {
+      "name": "m2p.cta.scienaptic-status.logger-header",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.scienaptic-status.logger-header."
+    },
+    {
+      "name": "m2p.cta.scienaptic-status.log-required",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.scienaptic-status.log-required."
+    },
+    {
+      "name": "m2p.cta.scienaptic-status.retry-count",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.scienaptic-status.retry-count."
+    },
+    {
+      "name": "m2p.cta.loan-documents-post-disbursal.endpoint",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-documents-post-disbursal.endpoint."
+    },
+    {
+      "name": "m2p.cta.loan-documents-post-disbursal.logger-header",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-documents-post-disbursal.logger-header."
+    },
+    {
+      "name": "m2p.cta.loan-documents-post-disbursal.log-required",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-documents-post-disbursal.log-required."
+    },
+    {
+      "name": "m2p.cta.loan-documents-post-disbursal.retry-count",
+      "type": "java.lang.String",
+      "description": "Description for m2p.cta.loan-documents-post-disbursal.retry-count."
+    }
+  ]
+}

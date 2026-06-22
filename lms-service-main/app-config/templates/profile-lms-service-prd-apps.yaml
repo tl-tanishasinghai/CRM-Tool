@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: profile-lms-service-prd-apps
+data:
+  OTEL_EXPORTER_OTLP_METRICS_PROTOCOL: "grpc"
+  OTEL_EXPORTER_OTLP_TRACES_PROTOCOL: "grpc"
+  OTEL_LOGS_EXPORTER: "none"
+  OTEL_METRICS_EXPORTER: "otlp"
+  OTEL_SERVICE_NAME: "lms-prod"
+  OTEL_TRACES_EXPORTER: "otlp"
+  OTEL_TRACES_SAMPLER: "always_on"
+  PROFILE: "prod"

@@ -1,0 +1,51 @@
+server:
+  port: 8091
+logging:
+  level:
+    root: INFO
+reactor:
+  netty:
+    http:
+      server:
+        forwarded:
+          strictValidation: false
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+  config:
+    import: m2p-properties.yml
+  codec:
+    max-in-memory-size: 10MB
+  servlet:
+    multipart:
+      max-request-size: 10MB
+web-client:
+  max-idle-time: 20
+  max-life-time: 30
+  pending-acquire-timeout: 30
+  evict-background: 15
+  retry-backoff: 250
+  acquire-max-count: 256
+  timeout:
+    extra-small: 1000
+    small: 10000
+    medium: 30000
+    large: 30000
+    extra-large: 120000
+migration:
+  switch: false
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+      group:
+        readiness:
+          include: rdsHealth, redisHealth, readinessState
+        liveness:
+          include: livenessState
+  web:
+    exposure:
+      include: health

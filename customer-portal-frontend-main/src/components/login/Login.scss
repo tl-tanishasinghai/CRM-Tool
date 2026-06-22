@@ -1,0 +1,517 @@
+/* General styles */
+.login-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Splash screen styles */
+.splash-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+  background-color: #0063ef;
+  color: white;
+  padding: 20px; /* Add padding on both sides */
+  box-sizing: border-box; /* Ensure padding is included in the width and height */
+}
+
+.splash-screen .mobile-overlay-image {
+  width: 100%;
+  height: auto;
+  max-height: 50vh;
+  margin-top: auto; /* Push the image to the bottom */
+}
+
+/* Left section */
+.login-left {
+  background-image: url("../../assets/images/Rectangle.webp"); /* Update this path */
+  background-size: cover;
+  background-position: center;
+  background-color: #0063ef; /* Set the background color */
+  background-blend-mode: overlay; /* Blend the background color with the image */
+  color: white;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0rem 2rem;
+  align-items: center;
+  position: relative; /* Ensure the content is positioned relative to the background */
+}
+
+.branding {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.logo {
+  width: 120px;
+}
+.login-tl-logo{
+  width: 185px;
+}
+
+.company-tagline {
+  align-self: stretch;
+  color: #fff;
+  text-align: center;
+  font-family: Poppins;
+  font-size: 44px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+}
+
+.company-tagline span {
+  font-weight: 700;
+}
+
+.overlay-image {
+  /* position: absolute; */
+  /* z-index: 1; */
+  /* width: 569.41px; */
+  /* height: 60vh; */
+  /* top: 525px; */
+  /* left: 214px; */
+  /* bottom: -20px; */
+
+  position: absolute;
+    z-index: 1;
+    /* width: 569.41px; */
+    height: 60vh;
+    max-width: 50vw;
+    /* top: 525px; */
+    /* left: 214px; */
+    bottom: -20px;
+}
+
+.mobile-overlay-image {
+  display: none; /* Hidden by default */
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+  bottom: 0;
+  /* top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); */
+}
+
+.feat-logo {
+  display: flex;
+  padding: 10px 20px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 0px 0px 10px 10px;
+  background: #f9f9f9;
+  height: 40px;
+  font-size: 12px;
+  color: #06283d;
+  text-align: center;
+  font-family: Poppins;
+  font-weight: 400;
+  width: 110%;
+}
+
+.verticle-line {
+  width: 1px;
+  height: 19px;
+  background: #cddbf3;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.login-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9f9f9;
+  width: 464px;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-box {
+  max-width: 375px;
+  text-align: left;
+}
+
+.login-box h2 {
+  color: #000;
+  font-family: "Poppins";
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.login-box p {
+  color: #595959;
+  font-size: 18px;
+  font-weight: 500;
+  font-family: "Poppins";
+}
+
+.login-box label {
+  color: var(--Foundation-Grey-G200, #434343);
+  font-size: 18px;
+  font-weight: 500;
+  font-family: "Poppins";
+}
+
+.phone-input {
+  display: flex;
+  padding: 22px 12px;
+  gap: 16px;
+  font-family: "Poppins";
+  border-radius: 8px;
+  border: 1px solid var(--Foundation-Stroke-S3, #8692a6);
+  margin: 10px 0px;
+  background-color: #f9f9f9;
+}
+
+.phone-input select {
+  width: 55px;
+  flex-shrink: 0;
+  color: #595959;
+  font-family: Poppins;
+  font-size: 16px;
+  font-weight: 600;
+  border: 0px;
+  background-color: #f9f9f9;
+  /* Default background color */
+
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("../../assets/images/carret\ -\ down.svg");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 20px;
+}
+
+.phone-input select:hover,
+.phone-input select:focus {
+  background-color: transparent; /* Remove background color on hover or focus */
+}
+
+.phone-input input {
+  width: 100%;
+  font-family: Poppins;
+  font-size: 18px;
+  font-weight: 500;
+}
+
+input {
+  all: unset;
+}
+.error-message {
+  font-family: Poppins;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 21px;
+  letter-spacing: 0%;
+  padding-bottom: 4px;
+  color: #ea4335;
+}
+.resend-btn {
+  border: none;
+  background: no-repeat;
+  color: #1565d8;
+  cursor: pointer;
+}
+.disbaled-cursor {
+  color: grey;
+  cursor: not-allowed;
+}
+
+.phone-input:hover,
+.phone-input:focus-within {
+  border-radius: 8px;
+  border: 1px solid var(--Foundation-Stroke-S2, #1565d8);
+  background: var(--Foundation-Grey-White, #fff);
+  box-shadow: 0px 4px 10px 0px rgba(0, 0, 0, 0.15);
+}
+
+.phone-number{
+  margin-top: 4px;
+}
+
+.dob-sublabel{
+  font-size: 14px !important;
+  color: #595959;
+  margin: 0 0 12px 0;
+}
+
+.otp-button {
+  width: 100%;
+  height: 64px;
+  border-radius: 8px;
+  background: var(--Foundation-Primary-Blue-P-300-Main, #1565d8);
+  color: white;
+  border: none;
+  padding: 12px;
+  font-size: 16px;
+  cursor: pointer;
+  font-weight: 500;
+  font-family: "Poppins";
+  transition: background-color 0.3s ease;
+}
+
+.resend-otp p,
+.resend-otp span {
+  font-size: 14px;
+  color: #595959;
+}
+
+.otp-button:hover {
+  background-color: #2c5282;
+}
+
+.otp-button.disabled {
+  background-color: #a2a2a2;
+  cursor: not-allowed;
+}
+
+.login-box.fade-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.otp-input-section {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.otp-input-section input {
+  width: 80px;
+  height: 50px;
+  text-align: center;
+  font-size: 24px;
+  border: 1px solid var(--Foundation-Stroke-S3, #8692a6);
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  padding: 10px 0px;
+}
+
+/* Media Queries */
+@media screen and (max-width: 991px) {
+  /* For medium screens */
+  .verticle-line {
+    margin-left: 0px;
+    margin-right: 0px;
+  }
+  .company-tagline {
+    font-size: 36px;
+  }
+  .login-left,
+  .login-right {
+    padding: 1rem;
+    padding-top: 0;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  /* For smaller screens */
+  /* .login-container {
+    flex-direction: column;
+  } */
+
+  .login-left {
+    display: none;
+  }
+
+  .otp-button{
+    position: absolute;
+    bottom: 0px;
+    width: 80vw !important;
+  }
+  .login-box{
+    height: 100%;
+  }
+  .login-right {
+    /* width: 100%; */
+    padding: 1rem;
+    padding-top: 0;
+  }
+
+  .company-tagline {
+    font-size: 28px;
+  }
+  .login-box h2 {
+    font-size: 28px;
+    margin-top: 0;
+    margin-bottom: 8px;
+  }
+  .login-box p{
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-size: 16px;
+  }
+  .overlay-image {
+    display: none; /* Hide the desktop image */
+  }
+  .mobile-overlay-image {
+    display: block; /* Show the mobile image */
+  }
+  .splash-screen {
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0px 20px;
+    position: relative;
+  }
+  .branding {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .feat-logo {
+    font-size: 9.375px;
+    padding: 7.81px 15.62px;
+  }
+
+  .otp-input-section {
+    gap: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .otp-input-section input {
+    width: 60px;
+    height: 40px;
+    font-size: 20px;
+    padding: 20px 12px;
+  }
+}
+
+@media screen and (max-width: 479px) {
+
+  .otp-button{
+    bottom: 30px;
+  }
+
+  .login-tl-logo{
+    width: 120px;
+  }
+  /* For extra small screens */
+  .company-tagline {
+    font-size: 24px;
+    padding-top: 80px;
+  }
+  .login-box h2 {
+    font-size: 24px;
+  }
+  .login-left {
+    display: none;
+  }
+
+  .login-right {
+    padding: 1rem;
+    padding-top: 0;
+    justify-content: normal;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    max-width: -webkit-fill-available;
+  }
+
+  .mobile-overlay-image {
+    top: 600px;
+    width: 362.352px;
+    height: 294px;
+  }
+
+  .otp-input-section {
+    gap: 2px;
+    margin: 10px 10px;
+    padding-top: 32px;
+  }
+
+  .otp-input-section input {
+    width: 14px;
+    height: 8px;
+    text-align: center;
+    font-size: 12px;
+    border: 1px solid var(--Foundation-Stroke-S3, #8692a6);
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    gap: 0px;
+    padding: 20px 12px;
+  }
+
+  .login-box p {
+    color: #595959;
+    font-size: 14px;
+    font-weight: 400;
+    font-family: "Poppins";
+  }
+
+  .login-box label {
+    font-size: 16px;
+    font-family: "Poppins";
+  }
+
+  .border-bottom {
+    border-bottom: 1px solid #e5ebff;
+    padding-top: 3px;
+  }
+}
+
+/* Mobile-specific styles */
+@media screen and (max-width: 767px) {
+  /* .login-right {
+    display: flex;
+    width: 100%;
+    padding-top: 80px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 303px;
+  } */
+
+  .login-box {
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+
+  .login-cont-one {
+    margin-bottom: 8px;
+  }
+
+  
+  .phone-number-section {
+    margin-bottom: auto;
+  }
+
+  .phone-input {
+    padding: 16px 10px ;
+    margin-bottom: 8px;
+    font-size: 16px;
+  }
+
+  .dob-input__field{
+    padding: 16px 10px ;
+    margin-bottom: 8px;
+    font-size: 16px;
+  }
+
+  .otp-button {
+    width: 100%;
+    margin-top: 20px;
+    left: 50%;
+    transform: translateX(-50%);    
+  }
+  .get-top-btn {
+    width: 100%;
+    margin-top: 200px;
+  }
+}

@@ -1,0 +1,272 @@
+m2p:
+  api:
+    health-status: /v1/open/healthstatus
+    reject-loan: /v1/loans/{loanAccountNumber}
+    get-lead: /v2/runreports/GetClientDetails/flatdata
+    get-lead-full: /v2/runreports/GetLead/flatdata
+    get-cp-lead: /v2/runreports/GetCpClientDetails/flatdata
+    get-cp-rps-lead: /v2/runreports/GetCpRpsClientDetails/flatdata
+    get-loan-insurance: /v2/runreports/getLoanInsuranceDetails/flatdata
+    approved-loan-details: /v2/runreports/approvedLoanDetails/flatdata
+    upload-documents: /v2/los/leads/{loanId}/documents/bulk
+    get-loans: /v1/loanapplicationreferences/overviews
+    get-loan: /v1/loanapplicationreferences/{id}
+    get-loan-v2: /v2/runreports/DisbursalStatusBpe/flatdata
+    create-lead: /v3/fat/individual-clients
+    create-loan: /v2/los/clients/{leadId}/leads
+    renewal-loan: /v2/los/leads/renewal
+    update-loan: /v1/loanapplicationreferences/{loanId}/terms
+    upload-aadhaar-xml: /v1/client/{id}/kyc/Aadhaar Xml/parse
+    upload-okyc-aadhaar-xml: /v1/client/{leadId}/kyc/Okyc Aadhaar Xml/parse
+    upload-selfie: /v2/clients/{leadId}/image
+    upload-nach: /v1/loanapplications/{loanId}/nach-mandate/manual-push
+    update-lead: /v3/fat/individual-clients/{leadId}
+    update-client-detail: /v1/clients/{leadId}
+    update-ucic: /v1/datatables/ucic/{leadId}
+    get-identifiers: /v1/clients/{leadId}/identifiers
+    get-nach: /v1/loanApplications/{loanId}/nach-mandate-requests
+    upload-agreement: /v1/loanapplication/{id}/documents
+    upload-kyc: /v1/clients/{leadId}/identifiers/{kycId}/documents
+    create-consent: /v1/leads/{loanId}/clients/{leadId}/consents
+    reject-loan-appl: /v1/loanapplicationreferences/{loanId}
+    get-rps: /v1/loanapplicationreferences/{loanId}/repayment-schedule
+    get-product-details: /v2/configuration/los/{productCode}
+    get-rps-without-loan: /v1/loans
+    trigger-disb: /v1/los/leads/{loanId}/cta/DISB
+    download-document: /v1/loanapplication/{loanId}/documents/{documentId}/attachment
+    dedupe: /v3/clients/dedupe
+    bre-post: /v2/los/leads/{loanId}/custom-integration/SCIENAPTIC
+    initiate-okyc: /v1/client/{leadId}/kyc/aadhaar-xml/initiate
+    verify-okyc: /v1/client/{leadId}/kyc/aadhaar-xml/verify-otp
+    undoapprove-loan: /v1/loanapplicationreferences/{loanId}
+    add-topup-charges: /v2/los/leads/{loanId}/charges
+    topup-data-table: /v1/datatables/loantopup/{loanId}
+    approve-loan: /v2/los/leads/{loanId}/approve
+    create-credit-line: /v2/los/leads/{loanId}/credit-line
+    fetch-credit-line: /v2/los/leads/{loanId}/credit-line
+    activate-credit-line: /v2/los/leads/{loanId}/credit-line/activate
+    approve-credit-line: /v2/los/leads/{loanId}/credit-line/approve
+    drawdown-credit-line: /v1/revolving-credit-lines/{account_number}/transactions/flexi-pay
+    approve-drawdown: /v1/revolving-credit-lines/{account_number}/transactions/{transaction_id}/approve
+    reject-drawdown: /v1/revolving-credit-lines/{account_number}/transactions/{transaction_id}/reject
+    get-credit-line: /v1/revolving-credit-lines/{accountNumber}
+    upload-documents-lead: /v2/clients/{leadId}/documents/bulk
+    vehicle-details: /v2/los/leads/{loanId}/asset/vehicle
+    merchant-details: /v1/anchor
+    merchant-bank-details: /v1/anchor/{identifier}/bankDetails
+    merchant-update: /v2/los/leads/{loanId}/associations-mapping
+    merchant-get: /v2/los/leads/{loanId}/anchor
+    bre-datatable: /v1/datatables/datatable_bre/{loanId}
+    insurance-datatable: /v1/datatables/insurance_details/{loanId}
+    aml-pep-datatable: /v1/datatables/aml_pep_result/{loanId}
+    call-experian: /v1/enquiry/creditbureau/loanapplication/{loanApplicationNo}
+    get-bureau-data: /v1/enquiry/creditbureau/{bureauId}/download
+    fetch-bank-account-details: /v1/clients/{clientId}/bankaccountdetails
+    add-bank-account-details: /v2/clients/{clientId}/bankaccountdetails
+    bank-account-data-table: /v1/datatables/bank_account_loan_application/{loanId}
+    pan-aadhaar-details-data-table: /v1/datatables/pan_adhaar_link/{loanId}
+    initiate-loan-disbursal: /v2/los/leads/{clientId}/initiate-disburse
+    get-ckyc-status: /v2/runreports/CKYC_SR_API/flatdata
+    initiate-ckyc: /v1/client/{leadId}/kyc/ckyc/initiate
+    get-ckyc-info: /v1/client/{leadId}/kyc/ckyc/kycInfo
+    add-co-applicant: /v1/loanapplicationreferences/{loanId}/coapplicants
+    add-beneficiary-bank-details: /v1/client/{leadId}/third-party-bank-account-details
+    get-beneficiary-bank-details: /v1/client/{leadId}/third-party-bank-account-details
+    activate-beneficiary-bank-account: /v1/client-third-party-bank-account-details/{bankAssociationId}/activate
+    get-cpv-status: /v2/runreports/cpv status/flatdata
+    get-vkyc-status: /v1/client/{leadId}/kyc/vkyc/status
+    initiate-vkyc: /v1/client/{leadId}/kyc/vkyc/initiate
+    add-liveliness-score: /v1/datatables/liveliness_score_client/{leadId}
+    add-risk-details: /v1/datatables/client_risk_details/{leadId}
+    get-lead-against-mobilenumber: /v1/search/advsearch
+    get-document-list: /v1/loanapplication/{loanApplicationId}/documents
+    penny-drop-datatable: /v1/datatables/penny_drop_clients/{leadId}
+    pan-digilocker-data-table: /v1/datatables/pan_digilocker/{leadId}
+    store-client-dependent-datatable: /v1/datatables/client_dependent/{leadId}
+    store-pan-verification-results: /v1/datatables/pan_verification_results/{leadId}
+    update-experian-report-data: /v1/enquiry/creditbureau/loanapplication/{leadId}/experian-report
+    store-validation-funnel-verification-results: /v1/datatables/client_validation_funnel_status/{leadId}
+    update-risk-categorisation-table: /v1/datatables/riskcategorization/{clientId}
+    get-addresses-by-client: /v1/clients/{clientId}/addresses
+    add-merchant-details: /v1/datatables/merchant_details/{leadId}
+    add-auto-disburse: /v1/datatables/auto_disbursal/{loanId}
+    update-auto-disburse: /v1/datatables/auto_disbursal/{loanId}
+    mark-loan-disbursed: /v1/loans/{lan}/disburse
+    mark-loan-application-disbursed: /v2/los/leads/{loanId}/disburse
+    disburse-loan-by-lan: /v1/loans/{loanAccountNumber}
+    get-transaction-details: /v1/revolving-credit-lines/{lineId}/transactions/flexi-pay
+    aa-identity-match-result-datatable: /v1/datatables/aa_identity_match_result/{loanId}
+    qc-checks-data-table: /v1/datatables/qc_checks_loan_application/{loanId}
+    risk-operation-datatable: /v1/datatables/risk_operation/{loanId}
+    get-image-tag: /v1/clients/{clientId}
+    get-image-by-image-id: /v1/client/{clientId}/images/{imageTag}
+    get-loanDetails: /v2/runreports/GetDetailsByLoanAppId/flatdata
+    get-lanDetails: /v2/runreports/GetLoanDetailsByLanId/flatdata
+    get-active-transaction-details: /v1/revolving-credit-lines/{lineId}/transactions/flexi-pay
+    get-all-transaction-details: /v1/revolving-credit-lines/{lineId}/transactions
+    loan-type-classification-table: /v1/datatables/loan_type_classification/{clientId}
+    reports:
+      get-aml-pep-result: /v2/runreports/get_aml_pep_result/flatdata
+      get-lan-loan-external-id: /v2/runreports/clientLanLoanFetch/flatdata
+      get-all-loans-by-lead-id: /v2/runreports/client_loan_application/flatdata
+      get-pan-aadhaar-client-id: /v2/runreports/Fetch_Adhaar_PAN/flatdata
+      get-client-loan-performance-report: /v2/runreports/{reportApi}/flatdata
+      get-disbursement-status: /v2/runreports/Disbursement_Status_Loan_Application/flatdata
+      get-clientId-of-null-ucic: /v2/runreports/get-clientId-of-null-ucic/flatdata
+      get-npa-loans: /v2/runreports/get-npa-loans/flatdata
+      get-max-dpd-by-client-id: /v2/runreports/get-max-dpd-by-client-id/flatdata
+      get-contact-details-by-loanApplicationId: /v2/runreports/fetch-contact-details-by-loanApplicationId/flatdata
+      get-risk-details: /v2/runreports/fetch-risk-details/flatdata
+      get-kyc-status: /v2/runreports/KYC_Status_Loan_application/flatdata
+      get-lead-against-mobilenumber-dob: /v2/runreports/get-lead-against-mobilenumber-dob/flatdata
+      get-lead-against-mobilenumber-dob-pan: /v2/runreports/get-lead-against-mobilenumber-dob-pan/flatdata
+      get-loan-externalId: /v2/runreports/GetLoanApplicationExternalId/flatdata
+      get-disbursement-status-v2: /v2/runreports/DisbursementStatusV2/flatdata
+      get-disbursement-check-data: /v2/runreports/get_loan_validation_data/flatdata
+      get-kyc-reuse-details: /v2/runreports/KYC_STATUS_PREVIOUS_LOAN_APPLICATION/flatdata
+      get-latest-aadhaar-document-id: /v2/runreports/get-latest-aadhaar-xml/flatdata
+      get-latest-business-proof-document: /v2/runreports/get-latest-business-proof-document/flatdata
+      get-aadhaar-by-docid: /v1/clients/{clientId}/documents/{documentId}/attachment
+      get-docket-details: /v2/runreports/docket_data_details/flatdata
+      get-bre-approved-loans: /v2/runreports/GetModernOfferExpiryLoans/flatdata
+      get-active-loans: /v2/runreports/get-active-loans/flatdata
+      get-disbursal-batch-data: /v2/runreports/get-batch-details-by-loan-application/flatdata
+      get-disbursal-batch-data-scf: /v2/runreports/get-batch-details-for-scf/flatdata
+      get-disbursal-amount: /v2/runreports/get-disbursal-amount/flatdata
+      get-disbursal-amount-scf: /v2/runreports/get-disbursal-amount-scf/flatdata
+      drawdown-callback-details: /v2/runreports/DrawdownCallbackDetails/flatdata
+      get-risk-dedupe-validation-data: /v2/runreports/get-risk-dedupe-validation-data/flatdata
+      get-loanDetails: /v2/runreports/GetDetailsByLoanAppId/flatdata
+      get-lanDetails: /v2/runreports/GetLoanDetailsByLanId/flatdata
+      get-charge-detail: /v2/runreports/Get_charge_loan_application/flatdata
+      requested_loan_details: /v2/runreports/requested_loan_details/flatdata
+      application-type-fundly: /v2/runreports/application_type_fundly/flatdata
+      get-drawdown-performance-report: /v2/runreports/{reportApi}/flatdata
+      get-activation-check-data: /v2/runreports/get-activation-check-data/flatdata
+    advancereports:
+      generate-report: /v1/advancedreports
+      get-filelocationid-against-resourceid: /v1/advancedreports
+      download-report-against-filelocationid: /v1/files/{fileLocationId}/download
+  config:
+    approve-loan-retry: 1
+  cta:
+    credit-line-creation:
+      endpoint: /v1/los/leads/{loanId}/cta/BLG
+      logger-header: CREDIT_LINE_CTA
+      log-required: false
+      retry-count: 0
+    credit-line-approval:
+      endpoint: /v1/los/leads/{loanId}/cta/CLA
+      logger-header: APPROVE_CREDIT_LINE_CTA
+      log-required: false
+      retry-count: 0
+    loan-creation:
+      endpoint: /v1/los/leads/{loanId}/cta/El
+      logger-header: LOAN_CTA
+      log-required: false
+      retry-count: 0
+    kyc-status:
+      endpoint: /v1/los/leads/{loanId}/cta/KYCR
+      logger-header: KYC_CTA
+      log-required: false
+      retry-count: 0
+    loan-documents-upload:
+      endpoint: /v1/los/leads/{loanId}/cta/LDU
+      logger-header: AGREEMENT_CTA
+      log-required: false
+      retry-count: 0
+    bre-status:
+      endpoint: /v1/los/leads/{loanId}/cta/BRE
+      logger-header: BRE_CTA
+      log-required: false
+      retry-count: 0
+    e-sign-status:
+      endpoint: /v1/los/leads/{loanId}/cta/ELD
+      logger-header: E_SIGN_CTA
+      log-required: false
+      retry-count: 0
+    okyc-status:
+      endpoint: /v1/los/leads/{loanId}/cta/OKYC
+      logger-header: OKYC_CTA
+      log-required: false
+      retry-count: 0
+    disbursement-trigger:
+      endpoint: /v1/los/leads/{loanId}/cta/DISB
+      logger-header: TRIGGER_DISB
+      log-required: false
+      retry-count: 0
+    loan-documents-post-disbursal:
+      endpoint: /v1/los/leads/{loanId}/cta/PDD
+      logger-header: POST_DISB_DOC_CTA
+      log-required: false
+      retry-count: 0
+    vehicle-asset-activity:
+      endpoint: /v1/los/leads/{loanId}/cta/VAA
+      logger-header: VEHICLE_ASSET_ACTIVITY
+      log-required: false
+      retry-count: 0
+    fi-step:
+      endpoint: /v1/los/leads/{loanId}/cta/FI
+      logger-header: FI_CTA
+      log-required: false
+      retry-count: 0
+    scienaptic-status:
+      endpoint: /v1/los/leads/{loanId}/cta/SNEP
+      logger-header: BRE_CTA
+      log-required: false
+      retry-count: 3
+    attach-bank-loan:
+      endpoint: /v1/los/leads/{loanId}/cta/LABA
+      logger-header: LOAN_BANK_ACCOUNT_CTA
+      log-required: false
+      retry-count: 0
+    ckycr-status:
+      endpoint: /v1/los/leads/{loanId}/cta/CKYCR
+      logger-header: CKYCR_CTA
+      log-required: false
+      retry-count: 0
+    start-kyc:
+      endpoint: /v1/los/leads/{loanId}/cta/AXML
+      logger-header: AXML_CTA
+      log-required: false
+      retry-count: 0
+    offer-downgrade:
+      endpoint: /v1/los/leads/{loanId}/cta/OFDG
+      logger-header: OFFER_DOWN_CTA
+      log-required: false
+      retry-count: 0
+    freeze-loan-application:
+      endpoint: /v1/los/leads/{loanId}/cta/LAA
+      logger-header: LAA_CTA
+      log-required: false
+      retry-count: 0
+    bureau-status:
+      endpoint: /v1/los/leads/{loanId}/cta/bureau-status
+      logger-header: BUREAU_CTA
+      log-required: false
+      retry-count: 3
+    auto-disbursal:
+      endpoint: /v1/los/leads/{loanId}/cta/AUTOD
+      logger-header: AUTO_DISBURSE_CTA
+      log-required: false
+      retry-count: 0
+    nach-mandate-upload:
+      endpoint: /v1/los/leads/{loanId}/cta/NMA
+      logger-header: NACH_MANDATE_CTA
+      log-required: false
+      retry-count: 0
+    omr-status:
+      endpoint: /v1/los/leads/{loanId}/cta/OMR
+      logger-header: OMR_CTA
+      log-required: false
+      retry-count: 0
+    xml-validation:
+      endpoint: /v1/los/leads/{loanId}/cta/AKYC
+      logger-header: AADHAAR_XML_CTA
+      log-required: true
+      retry-count: 3
+    okyc-xml-validation:
+      endpoint: /v1/los/leads/{loanId}/cta/OKYC
+      logger-header: OKYC_CTA
+      log-required: true
+      retry-count: 3

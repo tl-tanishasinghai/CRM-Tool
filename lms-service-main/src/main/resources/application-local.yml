@@ -1,0 +1,55 @@
+server:
+  port: 8091
+spring:
+  config:
+    import: m2p-properties.yml
+  codec:
+    max-in-memory-size: 10MB
+  servlet:
+    multipart:
+      max-request-size: 10MB
+  r2dbc:
+    url: ${dbUrl}
+    username: ${dbUserName}
+    password: ${dbPassword}
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
+    producer:
+      acks: ${SPRING_KAFKA_PRODUCER_ACKS}
+      max-request-size: ${SPRING_KAFKA_PRODUCER_MAX_REQUEST_SIZE}
+      request-timeout-ms: ${SPRING_KAFKA_PRODUCER_REQUEST_TIMEOUT_MS}
+      max-block-ms: ${SPRING_KAFKA_PRODUCER_MAX_BLOCK_MS}
+    topic:
+      logging: ${SPRING_KAFKA_TOPIC_LOGGING}
+springdoc:
+  url: Local Server - Trillion Loans LMS
+  show-actuator: true
+  packagesToScan: com.trillionloans.lms.controller
+  swagger-ui:
+    path: /swagger-ui
+    enabled: true
+logging:
+  level:
+    root: INFO
+m2p:
+  fineract-tenant-id: lms-uat
+  api:
+    base-url: https://lms-uat.trillionloans.com/fineract-provider/api
+  auth:
+    token: ImAxzJi-bZyP2tEDoAHn8LwbslE
+web-client:
+  max-idle-time: 60
+  max-life-time: 120
+  pending-acquire-timeout: 60
+  evict-background: 120
+  retry-backoff: 2
+restructure:
+  risk-validation:
+    disbursement-start: 2025-01-01
+    disbursement-end: 2025-08-31
+    dpd-min: 10
+    dpd-max-exclusive: 60
+    dpd-reject-threshold: 90
+    min-paid-repayments: 30
+    tenure-options: 120,180,270,360,450,540
+    reschedule-reason-id: 331

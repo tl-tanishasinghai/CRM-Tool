@@ -1,0 +1,624 @@
+* {
+    box-sizing: border-box;
+  }
+  
+.repay-loan-container{
+    display: flex;
+    max-width: 753.005px;
+    width:100%;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 36px;
+    margin: 48px auto 153px;
+    // padding:20px;
+    // padding-bottom: 20px;
+    min-height:657px;
+    // border : 1px solid black;
+
+    .payment-error-message{
+        color: #EA4335;
+        text-align: center;
+        font-family: Poppins;
+        font-size: 12px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: normal;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        align-self: stretch;
+    }
+}
+
+.repay-header{
+    display: flex;
+    height: 58px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    align-self: stretch;
+    // border-bottom:1px solid #e5ebff;
+}
+
+.repay-header-content{
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    align-self: stretch;
+}
+
+.repay-divider{
+    border-bottom: 1px solid #E5EBFF;
+    width: 100%;
+}
+.repay-loan-arrow-heading{
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.repay-loan-arrow-heading span {
+    color: var(--Foundation-Grey-G300-Main, #1C1C1C);
+    font-family: Poppins;
+    font-size: 32px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.left-arrow-button{
+    display: flex;
+    padding: 8px;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    border-radius: 28px;
+    background: rgba(43, 123, 255, 0.00);
+}
+
+.repay-loan-body-wrapper{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    align-self: stretch;
+
+    .repay-proceed-button{
+        display: flex;
+        height: 64px;
+        padding: 10px;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        align-self: stretch;
+        border-radius: 8px;
+        background: var(--Foundation-Primary-Blue-P-300-Main, #1565D8);
+        color: #FFF;
+        text-align: center;
+        font-family: Poppins;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 700;
+        cursor:pointer;
+        line-height: normal;
+        
+
+        &.disabled {
+            background: #C4C4C4;
+            pointer-events: none;
+            opacity: 0.7;
+          }      
+    }
+
+}
+
+.repay-loan-body{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    align-self: stretch;
+}
+
+.repay-loan-subheading{
+    display: flex;
+    width: 100%;
+    height: 50px;
+    padding: 10px 0;
+    align-items: center;
+    gap: 10px;
+    align-self:stretch;
+}
+
+.repay-loan-subheading span {
+    color: var(--Foundation-Grey-G300-Main, #1C1C1C);
+    font-family: Poppins;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
+
+.repay-loan-dropdown-wrapper{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    align-self: stretch;
+}
+
+.repay-loan-dropdown{
+    display: flex;
+    padding: 22px 12px;
+    align-items: center;
+    gap: 16px;
+    align-self: stretch;
+    border-radius: 8px;
+    border: 1px solid var(--Foundation-Stroke-S2, #8692A6);
+    background: var(--Foundation-Grey-White, #FFF);
+
+    &.open {
+        border: 1px solid var(--Foundation-Stroke-S2, #1565D8);
+    }
+
+    .dropdown-selected{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex: 1 0 0;
+        color: var(--Foundation-Grey-G100, #7B7B7B);
+        font-family: Poppins;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+
+        &.selected{
+            color: var(--Foundation-Grey-G200, #434343);
+        }
+    }
+    
+    .dropdown-arrow {
+        width: 20px;
+        height: 20px;
+        transition: transform 0.2s ease;
+      }
+    
+      .dropdown-arrow.rotate {
+        transform: rotate(180deg);
+      }
+    
+    select option{
+        color:#7B7B7B;
+        font-family: Poppins;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+    }
+
+}
+
+.dropdown-options{
+    // width:100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    align-self: stretch;
+    border-radius: 8px;
+    border: 1px solid rgba(43, 123, 255, 0.50);
+    background: #FFF;
+
+    .dropdown-option{
+        width: 100%;
+        display: flex;
+        max-width: 752px;
+        padding: 24px 12px;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid var(--Foundation-Grey-G50, #E8E8E8);
+        color: var(--Foundation-Grey-G200, #434343);
+        font-family: Poppins;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 600;
+        line-height: normal;
+    }
+}
+
+.repay-loan-verify-details-section{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    align-self: stretch;
+
+    .repay-loan-verify-details-header{
+        display: flex;
+        padding: 10px 0;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 2px;
+        align-self: stretch;
+
+        .repay-loan-verify-details-heading{
+            width: 142px;
+            color: var(--Foundation-Grey-G300-Main, #1C1C1C);
+            font-family: Poppins;
+            font-size: 20px;
+            font-style: normal;
+            font-weight: 700;
+            line-height: normal;
+        }
+
+        .repay-loan-verify-details-subheading{
+            max-width: 753.005px;
+            color: var(--Foundation-Grey-G200, #434343);
+            font-family: Poppins;
+            font-size: 18px;
+            font-style: normal;
+            font-weight: 500;
+            line-height: normal;
+        }
+    }
+
+    .repay-loan-verify-details-header-body{
+        display: flex;
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        align-self: stretch;
+        border-radius: 11px;
+        border: 1px solid var(--Foundation-Stroke-S1, #E5EBFF);
+        background: var(--Foundation-Surface-White, #FFF);
+
+        .repay-loan-verify-details-item{
+            display: flex;
+            align-items: center;
+            align-self: stretch;
+
+            .repay-loan-verify-details-item1{
+                display: flex;
+                width: 170px;
+                height: 40px;
+                padding: 12px 0;
+                align-items: center;
+                gap: 10px;
+                border-bottom: 1px solid var(--Foundation-Grey-G50, #E8E8E8);
+
+                span{
+                    color: var(--Foundation-Grey-G100, #7B7B7B);
+                    font-family: Poppins;
+                    font-size: 14px;
+                    font-style: normal;
+                    font-weight: 400;
+                    line-height: normal;
+                }
+
+            }
+    
+            .repay-loan-verify-details-item2{
+                display: flex;
+                height: 40px;
+                padding: 12px 0;
+                align-items: center;
+                gap: 10px;
+                flex: 1 0 0;
+                border-bottom: 1px solid var(--Foundation-Grey-G50, #E8E8E8);
+
+                span{
+                    color: var(--Foundation-Grey-G75, #A2A2A2);
+                    font-family: Poppins;
+                    font-size: 14px;
+                    font-style: normal;
+                    font-weight: 600;
+                    line-height: normal;
+                }
+            }
+        }
+
+        .repay-loan-verify-details-item:last-child {
+            .repay-loan-verify-details-item1,
+            .repay-loan-verify-details-item2 {
+              border-bottom: none;
+            }
+          }
+    }
+}
+
+.modal-content {
+    // display: flex;
+    width: 752px !important;
+    // height: 753px;
+    // padding: 142px 0px !important;
+    padding: 0px;
+    // flex-direction: column;
+    // align-items: center;
+    // gap: 40px;
+    border-radius: 10px !important;
+    // background: #FFF;
+}
+
+.payment-status-modal{
+    display:flex;
+    height: 753px;
+    width: 752px;
+    padding: 142px 0;
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+    border-radius: 10px;
+    background: #FFF;
+    overflow-y: hidden; // added for the overflow because of design
+}
+
+.payment-status-modal.final-status{
+    padding:120px 0px;
+}
+
+.payment-status-loading{
+    display: flex;
+    width: 316px;
+    height: 316px;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    aspect-ratio: 1/1;
+
+    // target the Lottie Player container
+    > div {
+        width: 316px;
+        height: 316px;
+        flex-shrink: 0;
+        aspect-ratio: 1/1;
+        // background: url('../../assets/images/Repay-Loan-Loader.json') lightgray 50% / cover no-repeat;
+    }
+}
+
+// .payment-status-loading.final-status {
+
+// }
+
+.payment-status-text{
+    display: flex;
+    height: 118px;
+    padding: 10px 0;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    align-self: stretch;
+
+    .payment-status-header{
+        color: var(--Foundation-Grey-G300-Main, #1C1C1C);
+        text-align: center;
+        font-family: Poppins;
+        font-size: 24px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: normal;
+    }
+
+    .payment-status-subtext,  .payment-status-transactionID{
+        max-width:753px;
+        width:100%;
+        color: var(--Foundation-Grey-G200, #434343);
+        text-align: center;
+        font-family: Poppins;
+        font-size: 18px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: normal;
+    }
+
+}
+
+.payment-status-cta{
+    display: flex;
+    padding: 32px 0;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    align-self: stretch;
+
+    .mylonas-cta{
+        display: flex;
+        height: 64px;
+        width: 280px;
+        padding: 10px;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+        // flex: 1 0 0;
+        border-radius: 8px;
+        background: var(--Foundation-Primary-Blue-P-300-Main, #1565D8);
+        color: #FFF;
+        text-align: center;
+        font-family: Poppins;
+        font-size: 16px;
+        font-style: normal;
+        font-weight: 700;
+        line-height: normal;
+        cursor:pointer;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        width: 85% !important;
+    }
+
+    // .payment-status-cta{
+    //     // margin-top:15px;
+    // }
+    .payment-status-modal{
+        padding-top: 0px;
+        width:100%;
+        height:660px;;
+    }
+    .payment-status-modal.final-status{
+        padding:0px;
+    }
+    .payment-status-loading img{
+        max-width: 316px;
+        max-height: 316px;
+    }
+    .payment-status-subtext,  .payment-status-transactionID{
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 576px) {
+
+    
+    .repay-loan-container{
+        margin:15px 0px 0px 0px;
+        padding: 0 15px;
+        gap:24px;
+        // max-width:330px;
+        // width: 100%;
+    }
+
+    .repay-header{
+        height:unset;
+        gap:12px;
+
+        // .repay-header-content{
+        //     // gap:12px;
+        // }
+        .repay-loan-arrow-heading{
+            gap: 12px;
+            align-self: stretch;
+        }
+        .repay-loan-arrow-heading span{
+            color:#000;
+            font-size:20px;
+        }
+        .left-arrow-button{
+            padding:6px;
+            gap:6px;
+            border-radius:21px;
+        }
+        .back-arrow{
+            content: url("../../assets/images/Left-Arrow-Mobile.png");
+        }
+        
+    }
+
+    .repay-loan-subheading{
+        height: unset;
+    }
+
+    .repay-loan-subheading span{
+        flex: 1 0 0;
+        font-size: 16px;
+    }
+    .repay-loan-dropdown{
+        padding: 16px 12px;
+    }
+    .dropdown-options{
+        // align-self:stretch;
+
+        .dropdown-option {
+            padding: 16px 12px;
+            align-self:stretch;//not available in desktop figma used width:100%;
+        }
+    }
+    .repay-loan-verify-details-section .repay-loan-verify-details-header .repay-loan-verify-details-heading{
+        font-size: 16px;
+    }
+    .repay-loan-verify-details-section .repay-loan-verify-details-header .repay-loan-verify-details-subheading {
+        align-self:stretch;
+        font-size: 14px;
+        font-weight: 400;
+    }
+    .repay-loan-body-wrapper{
+        gap:12px;
+    }
+    .repay-loan-body-wrapper .repay-proceed-button{
+        height:unset;
+    }
+    .modal-content {
+        width:320px !important;
+    }
+    .payment-status-loading{
+        width: 200px;
+        height: 200px;
+        flex-shrink:unset;
+    }
+    .payment-status-modal{
+        width:320px;
+        height:500px;
+        padding: 93px 24px;
+        justify-content:center; // not in desktop view figma
+        gap:10px;
+    }
+    .payment-status-modal.final-status{
+        padding: 32px 24px;
+        justify-content: space-between;
+    }
+    .payment-status-loading > div{
+        max-width:200px;
+        max-height:200px;
+    }
+
+    .status-image {
+        display: block;
+      }
+      
+      /* PAID */
+      .status-paid {
+        content: url("../../assets/images/repaySuccess.png");
+      
+        @media (max-width: 576px) {
+          content: url("../../assets/images/Repay-Success-Mobile.png");
+        }
+      }
+      
+      /* FAILED */
+      .status-failed {
+        content: url("../../assets/images/repayFailure.png");
+      
+        @media (max-width: 576px) {
+          content: url("../../assets/images/Repay-Failure-Mobile.png");
+        }
+      }
+      
+      /* INITIATED / PROCESSING */
+      .status-initiated {
+        content: url("../../assets/images/repayProgress.png");
+      
+        @media (max-width: 576px) {
+          content: url("../../assets/images/Repay-Progress-Mobile.png");
+        }
+      }
+    .payment-status-text{
+        flex-shrink: unset;
+        height:unset;
+    }
+    .payment-status-text .payment-status-header{
+        font-size:20px;
+    }
+    .payment-status-text .payment-status-subtext, .payment-status-text .payment-status-transactionID{
+        font-size:12px;
+        // width:unset;
+        // max-width:unset;
+    }
+    .payment-status-cta{
+        // padding:10px;
+        gap:10px;
+
+        .mylonas-cta{
+            height:unset;
+            width:100%;
+            font-size:14px;
+            align-self: stretch;
+        }
+    }
+}
+

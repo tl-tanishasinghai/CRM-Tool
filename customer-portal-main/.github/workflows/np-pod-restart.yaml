@@ -1,0 +1,54 @@
+name: Restart Deployment
+permissions:
+    id-token: write
+    contents: read
+on:
+  workflow_dispatch:
+    inputs:
+      namespace:
+        description: 'Environment'
+        required: true
+        default: 'qa-apps' # Ensure this matches one of the options below
+        type: choice
+        options:
+          - qa-apps
+          - stage-apps
+
+jobs:
+  rollout-restart:
+    runs-on: github-runners-devops
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Assume role for ECR push (Account 740154735441)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::740154735441:role/arc-runner-ecr-access-role
+          role-session-name: arc-ecr-push
+          aws-region: ap-south-1
+          role-skip-session-tagging: true
+
+      - name: Assume role for ECR push (Account  975050098564)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::975050098564:role/arc-ecr-push-role
+          role-session-name: arc-ecr-push-stage
+          aws-region: ap-south-1
+          role-skip-session-tagging: true
+          role-chaining: true 
+
+
+      - name: Set kube context
+        run: |
+            aws eks update-kubeconfig --region ap-south-1 --name ${{ vars.NON_PROD_CLUSTER }}
+
+
+      - name: Trigger Rollout
+        run: |
+          echo "Restarting deployment/${{ vars.APP_NAME }}-${{github.event.inputs.namespace}} in ${{ github.event.inputs.namespace }}..."
+          kubectl rollout restart deployment/${{ vars.APP_NAME }}-${{github.event.inputs.namespace}} -n ${{ github.event.inputs.namespace }}
+          
+      - name: Verify Health
+        run: |
+          kubectl rollout status deployment/${{ vars.APP_NAME }}-${{github.event.inputs.namespace}} -n ${{ github.event.inputs.namespace }} --timeout=2m

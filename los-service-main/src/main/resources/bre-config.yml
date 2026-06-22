@@ -1,0 +1,32 @@
+scienaptic:
+  api:
+    base-url: https://scienaptic.trillionloans.com/evaluator/flow
+    NCTF_NEW: /v1/flow-1355960?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+    NCBP_NEW: /v1/flow-82534576?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+    NINJ3_NEW: /v1/flow-222339296?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+    NINJ3_REPEAT: /v1/flow-222339296?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+    ELO_FRESH: /v1/flow-272769248?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+    ELO_REPEAT: /v1/flow-183271584?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+    ELO_TOPUP: /v1/flow-237240544?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+    OTOVL_NEW: /v1/flow-123187320?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+    BPBL1_FRESH: /v1/flow-170782792?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+    BPBL1_REPEAT: /v1/flow-95785016?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+    PLO1_FRESH: /v1/flow-271065216?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+    SAVE1_FRESH: /v1/flow-265216040?identifier=eb52eb80-1d22-4eab-a69f-7fa15133546a
+
+  auth:
+    token:
+      NCTF_NEW: XX97FM_WSD9FC7veZOHLf-EJK_JIQdWF_aMN8ZMnzJOH8sUchKXkrz66baXVzRmnZfplSTOqwOYJEyWVXfXybg==
+      NCBP_NEW: Fb2biA3WWlcRRFjbBuQn1_oKc9cWHnRr8xgE_usyPS6a_XoVWbPJ0W4ijeo7f7db5S6qtvH0o7JVEBzZtSC_Xw==
+      NINJ3_NEW: f5LihQcbwvRFa1WGNLsVv9htBAD0VBO7mkK2SNyXJPohJwB9nwgMzQvqQIEkKqz-S38IerN23aTV9rGI765ZrQ==
+      NINJ3_REPEAT: f5LihQcbwvRFa1WGNLsVv9htBAD0VBO7mkK2SNyXJPohJwB9nwgMzQvqQIEkKqz-S38IerN23aTV9rGI765ZrQ==
+      ELO_FRESH: m2JU8zNhskxkwP5UXAPdZJEBS53b1bHt-18FM6peBLKn0EWF6HzFijuzW5QEsqmPdzytO8sZ8nzcv4JCltfOww==
+      ELO_REPEAT: xVY8oRH4CA-AUSz_1PZSnX3lu6Zwa1MgvFMVDX7uMYpg7gqlP8Rw7xvsvUP4f7DnqnTekhrTtDAqlxinsn22zQ==
+      ELO_TOPUP: QPzZwhSxms2d9GLGgJzaaTlC9FX416Erm4GPGR9a7J0xverIaH94CDN3kV4NVzvI43fkgqdvSHFphGTHGrgnSw==
+      OTOVL_NEW: fMxMfFpM3gX9osMctelTxqRXNvV1jEWqnvn1kiajatkPPPVMzvdQIy9MFCr7dHAIjjKUeAFxuDdyOBE6SJQ7dA==
+      BPBL1_FRESH: NBD4V5ApyANA6JAT9Id5LxidoAaOcxYZ8VZmh0msIJNpDmBZ3cgkss-brVUneI2iHad6dQseok7Zkl9nqEa5vw==
+      BPBL1_REPEAT: xm6OFVA8MXKpS7_EUVqUOwoaNEclr2-Kpsrb12bDIdM1LtfUpTJedIHKoHtpdbtmOVmNTZKMQjUt34NFp7W8Wg==
+      PLO1_FRESH: KlwumR_aPNlqu0z0eayu1ehWWfZT0pSCIpBMpbN0VPsdIeUb5pxlKk7Zu6d4U8WQqGumlRNnu_QZwNxXp6pIzQ==
+      SAVE1_FRESH: xIAbBruY9lvZJEL38Jktz-8DbuFWWTj_lpnWkRiZPofb-DnyWlZj-nPW7LHJdDi4j4v8bG5GePsvJDDGXMI4RA==
+  config:
+    callback-retry: 3

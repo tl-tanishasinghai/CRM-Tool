@@ -1,0 +1,92 @@
+server:
+  port: 8091
+springdoc:
+  url: Local Server - Trillion Loans Customer Portal
+  show-actuator: true
+  packagesToScan: com.trillionloans.customer_portal.controller
+  swagger-ui:
+    path: /swagger-ui
+    enabled: true
+    operationsSorter: method
+    tags-sorter: alpha
+logging:
+  level:
+    root: INFO
+los:
+  api:
+    base-url: http://los-service.trillionloans.qa
+lms:
+  api:
+    base-url: http://lms-service.trillionloans.qa
+authorization-service:
+  api:
+    base-url: http://authorisation-service.trillionloans.stg
+allowed:
+  origin: '*'
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    password: ''
+    database: 0
+redis:
+  cache:
+    time: 5
+environment:
+  name: LOCAL
+product:
+  office:
+    mapping:
+      1: BharatPe
+      2: NinjaCart
+      3: NinjaCart
+      4: BharatPe
+      5: Liquiloans
+      6: OTO
+      7: Internal
+      8: Liquiloans
+      9: KarmaLife
+      10: NinjaCart
+      11: NinjaCart
+      12: Velocity
+      13: BharatPe
+      14: GOKWIK
+      15: Velocity
+      16: GOKWIK
+      17: GOKWIK
+      18: CredFlow
+      19: Test
+      20: Test
+      21: GETVANTAGE
+      22: GETVANTAGE
+      23: GOKWIK
+      24: Test
+      25: Test
+      26: Test
+      27: Test
+      28: CredFlow
+      29: OTO
+      30: Test
+      31: OTO
+      32: BharatPe
+      33: Test
+      34: Test
+      35: Test
+      36: Test
+      37: OTO
+      38: GOKWIK
+      39: GOKWIK
+      40: Test
+      41: Test
+      43: Test
+      44: BharatPe
+      45: Test
+      46: CredFlow
+      49: BharatPe
+
+collection:
+  api:
+    base-url: http://collection-service.trillionloans.qa
+
+disable:
+  product-id: 11, 3, 32

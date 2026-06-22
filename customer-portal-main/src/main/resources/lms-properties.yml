@@ -1,0 +1,22 @@
+lms:
+  api:
+    fetch-SOA:
+      endpoint: /partners/api/v1/collection/loanAccounts/{loanAccountNumber}/fetchSOA
+    fetch-NOC:
+      endpoint: /partners/api/v1/collection/loanAccounts/{loanAccountNumber}/noc
+    fetch-transactionDetails:
+      endpoint: /partners/api/v1/collection/loan/{loanAccountNumber}/transaction-details
+    fetch-allLoanDetails:
+      endpoint: /partners/api/v1/collection/{leadId}/loan/details
+    fetch-repayment-schedule-with-dpd:
+      endpoint: /partners/api/v1/collection/loanAccounts/{loanAccountNumber}/repayment-schedule-with-dpd
+    fetch-due-as-on-date:
+      endpoint: /partners/api/v1/collection/loanAccounts/{loanAccountNumber}/fetch-due/as-on-date/{date}
+    fetch-RPS:
+      endpoint: /partners/api/v1/collection/loanAccounts/{loanAccountNumber}/repaymentSchedule
+    save-consent:
+      endpoint: /partners/api/v1/collection/saveConsent/{clientId}
+    get-consent:
+      endpoint: /partners/api/v1/collection/getConsent/{clientID}
+    get-foreclosure:
+      endpoint: /partners/api/v1/collection/loanAccounts/{loanAccountNumber}/foreclosure-details
