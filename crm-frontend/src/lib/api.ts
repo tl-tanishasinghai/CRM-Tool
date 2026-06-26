@@ -21,6 +21,8 @@ import type {
   OpsTicketFilters,
   OpsTicketsPage,
   PiiField,
+  FieldSearchResult,
+  FreshdeskConversationEntry,
   SearchResult,
   StaffUser,
   TeamQueueResponse
@@ -112,6 +114,38 @@ export async function updateLeadStatus(crmLeadId: string, status: string) {
 
 export async function searchCustomers(query: string) {
   const response = await api.get<SearchResult[]>('/crm/search', { params: { query } })
+  return response.data
+}
+
+export type SearchField = 'mobile' | 'leadId' | 'lan' | 'la' | 'email'
+
+export async function searchCustomersByField(field: SearchField, value: string) {
+  const response = await api.get<FieldSearchResult>('/api/v1/crm/search', {
+    params: { field, value }
+  })
+  return response.data
+}
+
+export async function fetchFreshdeskConfig() {
+  const response = await api.get<{ freshdeskBaseUrl: string }>('/crm/freshdesk/tickets/config')
+  return response.data
+}
+
+export async function fetchFreshdeskConversations(ticketId: string) {
+  const response = await api.get<FreshdeskConversationEntry[]>(
+    `/crm/freshdesk/tickets/${encodeURIComponent(ticketId)}/conversations`
+  )
+  return response.data
+}
+
+export async function linkFreshdeskCustomer(
+  ticketId: string,
+  payload: { leadId: string; mobileNumber?: string; loanAccountNumber?: string }
+) {
+  const response = await api.post<FreshdeskAgentTicket>(
+    `/crm/freshdesk/tickets/${encodeURIComponent(ticketId)}/link-customer`,
+    payload
+  )
   return response.data
 }
 

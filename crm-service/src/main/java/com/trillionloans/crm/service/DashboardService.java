@@ -38,37 +38,26 @@ public class DashboardService {
 
     List<ActivityItem> activity =
         Stream.concat(
-                Stream.concat(
-                    tickets.stream()
-                        .map(
-                            ticket ->
-                                new ActivityItem(
-                                    ticket.id(),
-                                    "TICKET",
-                                    ticket.subject(),
-                                    ticket.status().name(),
-                                    null,
-                                    ticket.updatedAt())),
-                    calls.stream()
-                        .map(
-                            call ->
-                                new ActivityItem(
-                                    call.id(),
-                                    "CALL",
-                                    call.direction().name() + " call",
-                                    call.disposition().name(),
-                                    call.agentId(),
-                                    call.startedAt()))),
-                notes.stream()
+                tickets.stream()
                     .map(
-                        note ->
+                        ticket ->
                             new ActivityItem(
-                                note.id(),
-                                "NOTE",
-                                note.disposition() == null ? "Agent note" : note.disposition(),
-                                note.note(),
-                                note.agentId(),
-                                note.createdAt())))
+                                ticket.id(),
+                                "TICKET",
+                                ticket.subject(),
+                                ticket.status().name(),
+                                null,
+                                ticket.updatedAt())),
+                calls.stream()
+                    .map(
+                        call ->
+                            new ActivityItem(
+                                call.id(),
+                                "CALL",
+                                call.direction().name() + " call",
+                                call.disposition().name(),
+                                call.agentId(),
+                                call.startedAt())))
             .sorted(Comparator.comparing(ActivityItem::occurredAt).reversed())
             .toList();
 

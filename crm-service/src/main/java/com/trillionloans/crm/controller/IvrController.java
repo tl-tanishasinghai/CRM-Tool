@@ -28,12 +28,12 @@ public class IvrController {
   @GetMapping("/overview")
   public IvrOverviewResponse overview(
       @RequestHeader("X-CRM-Token") String token,
+      @RequestParam(required = false, defaultValue = "assigned") String assignment,
       @RequestParam(required = false) String query,
       @RequestParam(required = false) String leadId,
       @RequestParam(required = false) String mobileNumber,
       @RequestParam(required = false) String loanAccountNumber,
       @RequestParam(required = false) String disposition,
-      @RequestParam(required = false) String callSource,
       @RequestParam(required = false) String from,
       @RequestParam(required = false) String to,
       @RequestParam(defaultValue = "0") int page,
@@ -41,12 +41,12 @@ public class IvrController {
     StaffUser user = authService.requireAnyRole(token, Role.ADMIN, Role.LEAD, Role.AGENT);
     return ivrOverviewService.listOverview(
         user,
+        assignment,
         query,
         leadId,
         mobileNumber,
         loanAccountNumber,
         disposition,
-        callSource,
         parseInstant(from),
         parseInstant(to),
         page,

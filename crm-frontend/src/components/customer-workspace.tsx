@@ -173,12 +173,12 @@ export function LoanAccountPanel({ loan }: { loan: LoanSummary }) {
 export function CustomerOverview({
   profile,
   leadId,
-  ticket,
+  highlightLoanAccountNumber,
   onSelectLoan
 }: {
   profile: CustomerProfileResponse
   leadId: string
-  ticket?: CrmLead
+  highlightLoanAccountNumber?: string
   onSelectLoan?: (loanAccountNumber: string) => void
 }) {
   const { identity, loanAccounts } = profile
@@ -256,7 +256,9 @@ export function CustomerOverview({
           <div className="loan-account-chips">
             {loanAccounts.map((loan) => (
               <button
-                className="loan-account-chip"
+                className={`loan-account-chip ${
+                  highlightLoanAccountNumber === loan.loanAccountNumber ? 'highlighted' : ''
+                }`}
                 key={loan.loanAccountNumber}
                 type="button"
                 onClick={() => onSelectLoan?.(loan.loanAccountNumber)}
@@ -266,25 +268,6 @@ export function CustomerOverview({
                 <span className="loan-account-no">{loan.loanAccountNumber}</span>
               </button>
             ))}
-          </div>
-        </section>
-      )}
-
-      {ticket && (
-        <section className="ticket-context">
-          <div>
-            <p className="section-title">Working ticket</p>
-            <h4>{ticket.title || 'Untitled ticket'}</h4>
-          </div>
-          <div className="ticket-context-meta">
-            <span className={`status-pill ${statusTone(ticket.status)}`}>
-              {ticket.status.replace('_', ' ')}
-            </span>
-            <span className="context-pill">{ticket.priority}</span>
-            <span className="context-pill">{ticket.source}</span>
-            {ticket.loanAccountNumber && (
-              <span className="context-pill">{ticket.loanAccountNumber}</span>
-            )}
           </div>
         </section>
       )}

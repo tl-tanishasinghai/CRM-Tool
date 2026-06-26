@@ -334,6 +334,8 @@ public class CrmStore {
             call.toNumber(),
             call.durationSeconds(),
             call.recordingUrl(),
+            call.sourceChannel(),
+            call.freshdeskTicketId(),
             call.startedAt(),
             call.endedAt(),
             call.syncStatus(),
@@ -378,6 +380,45 @@ public class CrmStore {
             CrmRowMappers.CRM_LEAD,
             leadId);
     return leads.stream().findFirst();
+  }
+
+  public Optional<CrmLead> findLeadByLan(String lan) {
+    List<CrmLead> leads =
+        jdbc.query(
+            """
+            SELECT * FROM crm_leads
+            WHERE LOWER(loan_account_number) = LOWER(?)
+            LIMIT 1
+            """,
+            CrmRowMappers.CRM_LEAD,
+            lan);
+    return leads.stream().findFirst();
+  }
+
+  public Optional<CrmLead> findLeadByLoanApplicationId(String loanApplicationId) {
+    List<CrmLead> leads =
+        jdbc.query(
+            """
+            SELECT * FROM crm_leads
+            WHERE LOWER(loan_application_id) = LOWER(?)
+            LIMIT 1
+            """,
+            CrmRowMappers.CRM_LEAD,
+            loanApplicationId);
+    return leads.stream().findFirst();
+  }
+
+  public void updateCallTicketLink(String callId, String freshdeskTicketId, String sourceChannel) {
+    jdbc.update(
+        """
+        UPDATE call_logs
+        SET freshdesk_ticket_id = ?, source_channel = ?, updated_at = ?
+        WHERE id = ?
+        """,
+        freshdeskTicketId,
+        sourceChannel,
+        CrmRowMappers.ts(Instant.now()),
+        callId);
   }
 
   public AgentNote addNote(AgentNote note) {
@@ -509,9 +550,9 @@ public class CrmStore {
         """
         INSERT INTO call_logs (
           id, call_sid, parent_call_sid, lead_id, agent_id, call_direction, disposition, call_status,
-          phone_number, from_number, to_number, duration_seconds, recording_url, sync_status,
-          started_at, ended_at, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          phone_number, from_number, to_number, duration_seconds, recording_url, source_channel,
+          freshdesk_ticket_id, sync_status, started_at, ended_at, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT (id) DO UPDATE SET
           call_sid = EXCLUDED.call_sid,
           parent_call_sid = EXCLUDED.parent_call_sid,
@@ -525,6 +566,8 @@ public class CrmStore {
           to_number = EXCLUDED.to_number,
           duration_seconds = EXCLUDED.duration_seconds,
           recording_url = EXCLUDED.recording_url,
+          source_channel = EXCLUDED.source_channel,
+          freshdesk_ticket_id = EXCLUDED.freshdesk_ticket_id,
           sync_status = EXCLUDED.sync_status,
           started_at = EXCLUDED.started_at,
           ended_at = EXCLUDED.ended_at,
@@ -543,6 +586,8 @@ public class CrmStore {
         call.toNumber(),
         call.durationSeconds(),
         call.recordingUrl(),
+        call.sourceChannel(),
+        call.freshdeskTicketId(),
         call.syncStatus() == null ? null : call.syncStatus().name(),
         CrmRowMappers.ts(call.startedAt()),
         CrmRowMappers.ts(call.endedAt()),

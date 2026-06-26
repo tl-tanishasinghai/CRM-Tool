@@ -82,6 +82,8 @@ public final class CrmRowMappers {
               rs.getString("to_number"),
               (Integer) rs.getObject("duration_seconds"),
               rs.getString("recording_url"),
+              rs.getString("source_channel"),
+              rs.getString("freshdesk_ticket_id"),
               toInstant(rs.getTimestamp("started_at")),
               toInstant(rs.getTimestamp("ended_at")),
               enumOrNull(CallSyncStatus.class, rs.getString("sync_status")),

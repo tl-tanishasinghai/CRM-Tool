@@ -41,6 +41,143 @@ public class FreshdeskTicketService {
     return webClient != null && !baseUrl.isBlank() && !apiKey.isBlank();
   }
 
+  public List<TicketSummary> searchTicketsByEmail(String email) {
+    if (!isConfigured() || email == null || email.isBlank()) {
+      return List.of();
+    }
+    try {
+      JsonNode response =
+          webClient
+              .get()
+              .uri(
+                  uriBuilder ->
+                      uriBuilder
+                          .path("/api/v2/search/tickets")
+                          .queryParam("query", "\"email:'" + email + "'\"")
+                          .build())
+              .headers(headers -> headers.setBasicAuth(apiKey, "X"))
+              .retrieve()
+              .body(JsonNode.class);
+
+      List<TicketSummary> tickets = new ArrayList<>();
+      JsonNode results = response == null ? null : response.path("results");
+      if (results != null && results.isArray()) {
+        results.forEach(
+            node -> {
+              String leadId = node.path("custom_fields").path("cf_lead_id").asText("");
+              tickets.add(mapTicket(leadId.isBlank() ? null : leadId, node));
+            });
+      }
+      return tickets;
+    } catch (RuntimeException exception) {
+      log.warn("Freshdesk email ticket search failed for {}", email, exception);
+      return List.of();
+    }
+  }
+
+  public List<FreshdeskConversationEntry> fetchConversations(String freshdeskId) {
+    if (!isConfigured() || freshdeskId == null || freshdeskId.isBlank()) {
+      return List.of();
+    }
+    try {
+      JsonNode response =
+          webClient
+              .get()
+              .uri("/api/v2/tickets/{id}/conversations", freshdeskId)
+              .headers(headers -> headers.setBasicAuth(apiKey, "X"))
+              .retrieve()
+              .body(JsonNode.class);
+
+      List<FreshdeskConversationEntry> entries = new ArrayList<>();
+      if (response != null && response.isArray()) {
+        response.forEach(node -> entries.add(mapConversation(node)));
+      }
+      return entries;
+    } catch (RuntimeException exception) {
+      log.warn("Freshdesk conversation fetch failed for ticket {}", freshdeskId, exception);
+      return List.of();
+    }
+  }
+
+  public String createTicket(
+      String subject,
+      String description,
+      String leadId,
+      String mobileNumber,
+      String loanAccountNumber,
+      String channelTag) {
+    if (!isConfigured()) {
+      return null;
+    }
+
+    Map<String, Object> customFields = new HashMap<>();
+    if (leadId != null && !leadId.isBlank()) {
+      customFields.put("cf_lead_id", leadId);
+    }
+    if (mobileNumber != null && !mobileNumber.isBlank()) {
+      customFields.put("cf_mobile", mobileNumber);
+    }
+    if (loanAccountNumber != null && !loanAccountNumber.isBlank()) {
+      customFields.put("cf_loan_account_number", loanAccountNumber);
+    }
+    customFields.put("cf_source_channel", channelTag);
+
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("subject", subject);
+    payload.put("description", description);
+    payload.put("priority", 2);
+    payload.put("status", 2);
+    payload.put("tags", List.of(channelTag));
+    payload.put("custom_fields", customFields);
+
+    JsonNode response =
+        webClient
+            .post()
+            .uri("/api/v2/tickets")
+            .headers(headers -> headers.setBasicAuth(apiKey, "X"))
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(payload)
+            .retrieve()
+            .body(JsonNode.class);
+    return response == null ? null : response.path("id").asText(null);
+  }
+
+  public void updateCustomFields(String freshdeskId, Map<String, Object> fields) {
+    if (!isConfigured() || fields == null || fields.isEmpty()) {
+      return;
+    }
+    Map<String, Object> payload = new HashMap<>();
+    payload.put("custom_fields", fields);
+    webClient
+        .put()
+        .uri("/api/v2/tickets/{id}", freshdeskId)
+        .headers(headers -> headers.setBasicAuth(apiKey, "X"))
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(payload)
+        .retrieve()
+        .toBodilessEntity();
+  }
+
+  public void linkCustomer(
+      String freshdeskId, String leadId, String mobileNumber, String loanAccountNumber) {
+    if (!isConfigured()) {
+      return;
+    }
+    Map<String, Object> fields = new HashMap<>();
+    fields.put("cf_lead_id", leadId);
+    if (mobileNumber != null && !mobileNumber.isBlank()) {
+      fields.put("cf_mobile", mobileNumber);
+    }
+    if (loanAccountNumber != null && !loanAccountNumber.isBlank()) {
+      fields.put("cf_loan_account_number", loanAccountNumber);
+    }
+    updateCustomFields(freshdeskId, fields);
+  }
+
+  public String baseUrl() {
+    return baseUrl;
+  }
+
   public List<TicketSummary> searchTickets(CustomerProfile profile) {
     if (!isConfigured() || profile == null || profile.email() == null || profile.email().isBlank()) {
       return List.of();
@@ -161,10 +298,12 @@ public class FreshdeskTicketService {
         node.path("responder").path("name").asText("Agent"),
         agentEmail,
         node.path("source").asText("Email"),
+        resolveSourceChannel(node),
         node.path("status").asText(),
         createdAt,
         updatedAt,
         closedAt,
+        1,
         List.of(
             new FreshdeskConversationEntry(
                 "conv-" + node.path("id").asText(),
@@ -172,6 +311,33 @@ public class FreshdeskTicketService {
                 node.path("description_text").asText(""),
                 createdAt,
                 false)));
+  }
+
+  private String resolveSourceChannel(JsonNode node) {
+    String custom = node.path("custom_fields").path("cf_source_channel").asText("");
+    if (!custom.isBlank()) {
+      return custom;
+    }
+    JsonNode tags = node.path("tags");
+    if (tags.isArray()) {
+      for (JsonNode tag : tags) {
+        String value = tag.asText("");
+        if ("greylabs_bot".equalsIgnoreCase(value) || "agent".equalsIgnoreCase(value)) {
+          return value;
+        }
+      }
+    }
+    return "agent";
+  }
+
+  private FreshdeskConversationEntry mapConversation(JsonNode node) {
+    boolean incoming = node.path("incoming").asBoolean(true);
+    return new FreshdeskConversationEntry(
+        node.path("id").asText(),
+        incoming ? "Customer" : "Agent",
+        node.path("body_text").asText(node.path("body").asText("")),
+        parseInstant(node.path("created_at").asText(null)),
+        !incoming);
   }
 
   private TicketSummary mapTicket(String leadId, JsonNode node) {

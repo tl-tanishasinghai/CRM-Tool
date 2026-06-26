@@ -2,12 +2,18 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import {
-  fetchFreshdeskBucket,
+  fetchFreshdeskConfig,
+  fetchFreshdeskConversations,
+  linkFreshdeskCustomer,
   replyFreshdeskTicket,
-  syncFreshdeskTickets,
-  updateFreshdeskTicket
+  searchCustomersByField,
+  syncFreshdeskTickets
 } from '@/lib/api'
-import type { FreshdeskAgentTicket, FreshdeskTicketBucketResponse } from '@/lib/types'
+import type {
+  FreshdeskAgentTicket,
+  FreshdeskConversationEntry,
+  FreshdeskTicketBucketResponse
+} from '@/lib/types'
 
 type Props = {
   onOpenCustomer?: (leadId: string) => void
@@ -17,9 +23,15 @@ type Props = {
 export function AgentFreshdeskBucket({ onOpenCustomer, initialTicketId }: Props) {
   const [bucket, setBucket] = useState<FreshdeskTicketBucketResponse | null>(null)
   const [selectedTicketId, setSelectedTicketId] = useState('')
+  const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null)
+  const [expandedConversations, setExpandedConversations] = useState<FreshdeskConversationEntry[]>([])
+  const [loadingConversations, setLoadingConversations] = useState(false)
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)
+  const [freshdeskBaseUrl, setFreshdeskBaseUrl] = useState('')
   const [reply, setReply] = useState('')
+  const [linkLeadId, setLinkLeadId] = useState('')
+  const [linking, setLinking] = useState(false)
   const [filters, setFilters] = useState({
     query: '',
     priority: '',
@@ -36,53 +48,57 @@ export function AgentFreshdeskBucket({ onOpenCustomer, initialTicketId }: Props)
     [bucket, selectedTicketId]
   )
 
-  async function loadBucket(nextFilters = filters) {
-    setLoading(true)
+  async function autoSync() {
+    setSyncing(true)
     try {
-      const data = await fetchFreshdeskBucket({
-        query: nextFilters.query || undefined,
-        priority: nextFilters.priority || undefined,
-        mobileNumber: nextFilters.mobileNumber || undefined,
-        loanAccountNumber: nextFilters.loanAccountNumber || undefined,
-        createdFrom: nextFilters.createdFrom || undefined,
-        createdTo: nextFilters.createdTo || undefined,
-        closedFrom: nextFilters.closedFrom || undefined,
-        closedTo: nextFilters.closedTo || undefined
-      })
+      const data = await syncFreshdeskTickets()
       setBucket(data)
       if (initialTicketId && data.tickets.some((ticket) => ticket.id === initialTicketId)) {
         setSelectedTicketId(initialTicketId)
+        setExpandedTicketId(initialTicketId)
       } else if (!selectedTicketId && data.tickets[0]) {
         setSelectedTicketId(data.tickets[0].id)
       }
     } finally {
+      setSyncing(false)
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    loadBucket().catch(() => undefined)
+    fetchFreshdeskConfig()
+      .then((config) => setFreshdeskBaseUrl(config.freshdeskBaseUrl || ''))
+      .catch(() => undefined)
+    autoSync().catch(() => setLoading(false))
   }, [])
 
   useEffect(() => {
     if (initialTicketId && bucket?.tickets.some((ticket) => ticket.id === initialTicketId)) {
       setSelectedTicketId(initialTicketId)
+      setExpandedTicketId(initialTicketId)
     }
   }, [initialTicketId, bucket])
 
-  async function handleSync() {
-    setSyncing(true)
-    try {
-      const data = await syncFreshdeskTickets()
-      setBucket(data)
-    } finally {
-      setSyncing(false)
+  useEffect(() => {
+    if (!expandedTicketId) {
+      setExpandedConversations([])
+      return
     }
-  }
+    setLoadingConversations(true)
+    fetchFreshdeskConversations(expandedTicketId)
+      .then(setExpandedConversations)
+      .catch(() => setExpandedConversations([]))
+      .finally(() => setLoadingConversations(false))
+  }, [expandedTicketId])
 
   async function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    await loadBucket(filters)
+    setLoading(true)
+    try {
+      await autoSync()
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function handleReply(event: FormEvent<HTMLFormElement>) {
@@ -102,21 +118,55 @@ export function AgentFreshdeskBucket({ onOpenCustomer, initialTicketId }: Props)
           }
         : current
     )
+    if (expandedTicketId === updated.id) {
+      const conversations = await fetchFreshdeskConversations(updated.id)
+      setExpandedConversations(conversations)
+    }
   }
 
-  async function handleUpdate(status?: string, priority?: string) {
-    if (!selectedTicket) {
+  async function handleLinkCustomer(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (!selectedTicket || !linkLeadId.trim()) {
       return
     }
-    const updated = await updateFreshdeskTicket(selectedTicket.id, { status, priority })
-    setBucket((current) =>
-      current
-        ? {
-            ...current,
-            tickets: current.tickets.map((ticket) => (ticket.id === updated.id ? updated : ticket))
-          }
-        : current
-    )
+    setLinking(true)
+    try {
+      const updated = await linkFreshdeskCustomer(selectedTicket.id, {
+        leadId: linkLeadId.trim(),
+        mobileNumber: selectedTicket.mobileNumber || undefined,
+        loanAccountNumber: selectedTicket.loanAccountNumber || undefined
+      })
+      setBucket((current) =>
+        current
+          ? {
+              ...current,
+              tickets: current.tickets.map((ticket) =>
+                ticket.id === updated.id ? updated : ticket
+              )
+            }
+          : current
+      )
+      setLinkLeadId('')
+    } finally {
+      setLinking(false)
+    }
+  }
+
+  async function handleLookupLeadForLink() {
+    if (!selectedTicket?.requesterEmail) {
+      return
+    }
+    const result = await searchCustomersByField('email', selectedTicket.requesterEmail)
+    if (result.customerFound && result.leadId) {
+      setLinkLeadId(result.leadId)
+    }
+  }
+
+  function freshdeskTicketUrl(ticket: FreshdeskAgentTicket) {
+    if (!freshdeskBaseUrl || !ticket.freshdeskId) {
+      return null
+    }
+    return `${freshdeskBaseUrl.replace(/\/$/, '')}/a/tickets/${ticket.freshdeskId}`
   }
 
   return (
@@ -126,15 +176,12 @@ export function AgentFreshdeskBucket({ onOpenCustomer, initialTicketId }: Props)
           <p className="eyebrow">Freshdesk bucket</p>
           <h3>Tickets assigned to you</h3>
           <p className="meta">
-            {bucket?.freshdeskConfigured
-              ? 'Live Freshdesk sync is enabled.'
-              : 'Showing seeded tickets until Freshdesk credentials are configured.'}
+            {syncing
+              ? 'Syncing from Freshdesk…'
+              : bucket?.freshdeskConfigured
+                ? 'Auto-synced from Freshdesk on tab open.'
+                : 'Showing seeded tickets until Freshdesk credentials are configured.'}
           </p>
-        </div>
-        <div className="header-actions">
-          <button className="secondary" disabled={syncing} type="button" onClick={handleSync}>
-            {syncing ? 'Syncing…' : 'Sync from Freshdesk'}
-          </button>
         </div>
       </div>
 
@@ -224,27 +271,7 @@ export function AgentFreshdeskBucket({ onOpenCustomer, initialTicketId }: Props)
           </label>
         </div>
         <div className="filter-actions">
-          <button type="submit">Apply filters</button>
-          <button
-            className="secondary"
-            type="button"
-            onClick={() => {
-              const cleared = {
-                query: '',
-                priority: '',
-                mobileNumber: '',
-                loanAccountNumber: '',
-                createdFrom: '',
-                createdTo: '',
-                closedFrom: '',
-                closedTo: ''
-              }
-              setFilters(cleared)
-              loadBucket(cleared).catch(() => undefined)
-            }}
-          >
-            Reset
-          </button>
+          <button type="submit">Refresh</button>
         </div>
       </form>
 
@@ -260,7 +287,12 @@ export function AgentFreshdeskBucket({ onOpenCustomer, initialTicketId }: Props)
                 className={`freshdesk-row ${selectedTicketId === ticket.id ? 'active' : ''}`}
                 key={ticket.id}
                 type="button"
-                onClick={() => setSelectedTicketId(ticket.id)}
+                onClick={() => {
+                  setSelectedTicketId(ticket.id)
+                  setExpandedTicketId((current) =>
+                    current === ticket.id ? null : ticket.id
+                  )
+                }}
               >
                 <div className="freshdesk-row-top">
                   <strong>{ticket.subject}</strong>
@@ -273,11 +305,32 @@ export function AgentFreshdeskBucket({ onOpenCustomer, initialTicketId }: Props)
                   <span className={`status-pill ${priorityTone(ticket.priority)}`}>
                     {ticket.priority}
                   </span>
+                  <ChannelBadge channel={ticket.sourceChannel} />
                   <span className="meta">{ticket.requesterName}</span>
                 </div>
                 <p className="meta">
-                  {ticket.channel} · {ticket.slaHint} · {formatDate(ticket.updatedAt)}
+                  {ticket.channel} · {ticket.conversationCount ?? ticket.conversations.length}{' '}
+                  comment{(ticket.conversationCount ?? ticket.conversations.length) === 1 ? '' : 's'}{' '}
+                  · {formatDate(ticket.updatedAt)}
                 </p>
+                {expandedTicketId === ticket.id && (
+                  <div className="freshdesk-inline-thread" onClick={(event) => event.stopPropagation()}>
+                    {loadingConversations ? (
+                      <p className="meta">Loading conversation…</p>
+                    ) : (
+                      expandedConversations.map((entry) => (
+                        <div
+                          className={`conversation-item ${entry.agentReply ? 'agent' : ''}`}
+                          key={entry.id}
+                        >
+                          <strong>{entry.author}</strong>
+                          <p>{entry.body}</p>
+                          <span className="meta">{formatDate(entry.createdAt)}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
               </button>
             ))}
         </div>
@@ -285,10 +338,35 @@ export function AgentFreshdeskBucket({ onOpenCustomer, initialTicketId }: Props)
         {selectedTicket && (
           <div className="panel freshdesk-detail">
             <TicketDetail
+              freshdeskUrl={freshdeskTicketUrl(selectedTicket)}
               onOpenCustomer={onOpenCustomer}
-              onUpdate={handleUpdate}
               ticket={selectedTicket}
             />
+
+            {!selectedTicket.leadId && (
+              <form className="inline-form" onSubmit={handleLinkCustomer}>
+                <p className="section-title">Link customer</p>
+                <div className="form-row">
+                  <input
+                    placeholder="Lead ID from search"
+                    value={linkLeadId}
+                    onChange={(event) => setLinkLeadId(event.target.value)}
+                  />
+                  <button
+                    className="secondary"
+                    disabled={!selectedTicket.requesterEmail}
+                    onClick={() => handleLookupLeadForLink().catch(() => undefined)}
+                    type="button"
+                  >
+                    Lookup by email
+                  </button>
+                  <button disabled={linking || !linkLeadId.trim()} type="submit">
+                    {linking ? 'Linking…' : 'Link customer'}
+                  </button>
+                </div>
+              </form>
+            )}
+
             <form onSubmit={handleReply}>
               <label>
                 Add reply / comment
@@ -310,12 +388,12 @@ export function AgentFreshdeskBucket({ onOpenCustomer, initialTicketId }: Props)
 }
 
 function TicketDetail({
+  freshdeskUrl,
   onOpenCustomer,
-  onUpdate,
   ticket
 }: {
+  freshdeskUrl: string | null
   onOpenCustomer?: (leadId: string) => void
-  onUpdate: (status?: string, priority?: string) => Promise<void>
   ticket: FreshdeskAgentTicket
 }) {
   return (
@@ -328,11 +406,19 @@ function TicketDetail({
             {ticket.requesterName} · {ticket.requesterEmail} · {ticket.mobileNumber}
           </p>
         </div>
-        {ticket.leadId && onOpenCustomer && (
-          <button className="secondary" type="button" onClick={() => onOpenCustomer(ticket.leadId)}>
-            Open customer 360
-          </button>
-        )}
+        <div className="header-actions">
+          <ChannelBadge channel={ticket.sourceChannel} />
+          {freshdeskUrl && (
+            <a className="secondary button-link" href={freshdeskUrl} rel="noreferrer" target="_blank">
+              Open in Freshdesk
+            </a>
+          )}
+          {ticket.leadId && onOpenCustomer && (
+            <button className="secondary" type="button" onClick={() => onOpenCustomer(ticket.leadId)}>
+              Open customer 360
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="summary-grid">
@@ -345,33 +431,18 @@ function TicketDetail({
         <Stat label="Assignee" value={ticket.assigneeName} />
         <Stat label="SLA" value={ticket.slaHint} />
       </div>
-
-      <div className="header-actions">
-        <button className="secondary" type="button" onClick={() => onUpdate('PENDING')}>
-          Mark pending
-        </button>
-        <button className="secondary" type="button" onClick={() => onUpdate('RESOLVED')}>
-          Resolve
-        </button>
-        <button className="ghost" type="button" onClick={() => onUpdate('CLOSED')}>
-          Close
-        </button>
-      </div>
-
-      <section className="summary-section">
-        <p className="section-title">Conversation</p>
-        <div className="conversation-list">
-          {ticket.conversations.map((entry) => (
-            <div className={`conversation-item ${entry.agentReply ? 'agent' : ''}`} key={entry.id}>
-              <strong>{entry.author}</strong>
-              <p>{entry.body}</p>
-              <span className="meta">{formatDate(entry.createdAt)}</span>
-            </div>
-          ))}
-        </div>
-      </section>
     </>
   )
+}
+
+function ChannelBadge({ channel }: { channel?: string | null }) {
+  if (!channel) {
+    return null
+  }
+  const normalized = channel.toLowerCase()
+  const label = normalized === 'greylabs_bot' ? 'GreyLabs bot' : 'Agent'
+  const tone = normalized === 'greylabs_bot' ? 'warning' : ''
+  return <span className={`context-pill ${tone}`}>{label}</span>
 }
 
 function Stat({ label, value }: { label: string; value: string | number }) {

@@ -196,6 +196,8 @@ public class ExotelCallSyncService {
         to,
         intValue(node, "Duration"),
         text(node, "RecordingUrl"),
+        inferSourceChannel(sid),
+        null,
         startedAt,
         endedAt,
         CallSyncStatus.SYNCED,
@@ -208,6 +210,13 @@ public class ExotelCallSyncService {
       return CallDirection.OUTBOUND;
     }
     return CallDirection.INBOUND;
+  }
+
+  private String inferSourceChannel(String callSid) {
+    if (callSid != null && callSid.toLowerCase(Locale.ENGLISH).contains("greylabs")) {
+      return "greylabs_bot";
+    }
+    return "agent";
   }
 
   private CallDisposition dispositionFromStatus(String status) {

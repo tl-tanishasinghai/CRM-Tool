@@ -3,22 +3,17 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import {
   createCallEvent,
-  createNote,
   createTicket,
   fetchCustomerProfile,
   fetchDashboard,
-  fetchMyQueue,
-  ingestLead,
-  searchCustomers,
-  updateLeadStatus
+  searchCustomersByField
 } from '@/lib/api'
-import type { CrmLead, CustomerDashboard, CustomerProfileResponse, SearchResult } from '@/lib/types'
+import type { CustomerDashboard, CustomerProfileResponse } from '@/lib/types'
 import {
   CustomerOverview,
   CustomerTabBar,
   LoanTabs,
-  TabShell,
-  TicketTabs
+  TabShell
 } from '@/components/customer-workspace'
 import { LoanDetailPanel } from '@/components/loan-detail-panel'
 import { AgentFreshdeskBucket } from '@/components/agent-freshdesk-bucket'
@@ -27,31 +22,33 @@ import { WorkflowPanel } from '@/components/workflow-panel'
 
 type WorkspaceMode = 'workspace' | 'support' | 'ivr' | 'workflow'
 type CustomerTab = 'overview' | 'loans' | 'activity'
+type SearchField = 'mobile' | 'leadId' | 'lan' | 'la' | 'email'
+
+const SEARCH_FIELDS: { value: SearchField; label: string; placeholder: string }[] = [
+  { value: 'mobile', label: 'Mobile', placeholder: '10-digit mobile number' },
+  { value: 'leadId', label: 'Lead ID', placeholder: 'LOS lead ID' },
+  { value: 'lan', label: 'LAN', placeholder: 'Loan account number' },
+  { value: 'la', label: 'LA', placeholder: 'Loan application ID' },
+  { value: 'email', label: 'Email', placeholder: 'Customer email' }
+]
 
 export function AgentDashboard() {
   const [mode, setMode] = useState<WorkspaceMode>('workspace')
-  const [queue, setQueue] = useState<CrmLead[]>([])
   const [selectedLeadId, setSelectedLeadId] = useState('')
-  const [selectedTicketId, setSelectedTicketId] = useState('')
+  const [highlightLan, setHighlightLan] = useState('')
   const [selectedLoanId, setSelectedLoanId] = useState('')
   const [dashboard, setDashboard] = useState<CustomerDashboard | null>(null)
   const [customerProfile, setCustomerProfile] = useState<CustomerProfileResponse | null>(null)
-  const [query, setQuery] = useState('')
+  const [searchField, setSearchField] = useState<SearchField>('mobile')
+  const [searchValue, setSearchValue] = useState('')
   const [inboundMobile, setInboundMobile] = useState('')
-  const [results, setResults] = useState<SearchResult[]>([])
-  const [note, setNote] = useState('')
+  const [customerFound, setCustomerFound] = useState<boolean | null>(null)
+  const [lastMatchLabel, setLastMatchLabel] = useState('')
   const [ticketSubject, setTicketSubject] = useState('')
   const [callDisposition, setCallDisposition] = useState('CONNECTED')
   const [activeTab, setActiveTab] = useState<CustomerTab>('overview')
   const [searching, setSearching] = useState(false)
   const [supportTicketId, setSupportTicketId] = useState('')
-
-  const selectedTicket = useMemo(
-    () =>
-      queue.find((item) => item.id === selectedTicketId)
-      || queue.find((item) => item.leadId === selectedLeadId),
-    [queue, selectedLeadId, selectedTicketId]
-  )
 
   const loanAccounts = customerProfile?.loanAccounts || []
 
@@ -59,17 +56,11 @@ export function AgentDashboard() {
     if (selectedLoanId && loanAccounts.some((loan) => loan.loanAccountNumber === selectedLoanId)) {
       return selectedLoanId
     }
-    return loanAccounts[0]?.loanAccountNumber || selectedLoanId
-  }, [loanAccounts, selectedLoanId])
-
-  async function refreshQueue() {
-    const data = await fetchMyQueue()
-    setQueue(data)
-    if (!selectedLeadId && data[0]) {
-      setSelectedLeadId(data[0].leadId)
-      setSelectedTicketId(data[0].id)
+    if (highlightLan && loanAccounts.some((loan) => loan.loanAccountNumber === highlightLan)) {
+      return highlightLan
     }
-  }
+    return loanAccounts[0]?.loanAccountNumber || selectedLoanId
+  }, [loanAccounts, highlightLan, selectedLoanId])
 
   async function refreshDashboard(leadId = selectedLeadId) {
     if (!leadId) {
@@ -84,8 +75,13 @@ export function AgentDashboard() {
     setDashboard(dashboardData)
     setCustomerProfile(profileData)
     const accounts = profileData.loanAccounts
-    if (!selectedLoanId || !accounts.some((loan) => loan.loanAccountNumber === selectedLoanId)) {
-      setSelectedLoanId(accounts[0]?.loanAccountNumber || '')
+    if (
+      !selectedLoanId
+      || (!accounts.some((loan) => loan.loanAccountNumber === selectedLoanId)
+        && highlightLan
+        && accounts.some((loan) => loan.loanAccountNumber === highlightLan))
+    ) {
+      setSelectedLoanId(highlightLan || accounts[0]?.loanAccountNumber || '')
     }
   }
 
@@ -95,37 +91,51 @@ export function AgentDashboard() {
   }
 
   useEffect(() => {
-    refreshQueue().catch(() => undefined)
-  }, [])
+    if (selectedLeadId && customerFound) {
+      refreshDashboard().catch(() => undefined)
+    }
+  }, [selectedLeadId, customerFound])
 
-  useEffect(() => {
-    refreshDashboard().catch(() => undefined)
-  }, [selectedLeadId])
-
-  function openCustomer(leadId: string, ticketId?: string) {
+  function openCustomer(leadId: string, lan?: string) {
     setMode('workspace')
     setSelectedLeadId(leadId)
-    if (ticketId) {
-      setSelectedTicketId(ticketId)
-    }
+    setHighlightLan(lan || '')
+    setCustomerFound(true)
     setActiveTab('overview')
   }
 
-  async function handleSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (!query.trim()) {
+  async function runFieldSearch(field: SearchField, value: string) {
+    const trimmed = value.trim()
+    if (!trimmed) {
       return
     }
     setSearching(true)
     try {
-      const data = await searchCustomers(query.trim())
-      setResults(data)
-      if (data[0]) {
-        openCustomer(data[0].leadId)
+      const result = await searchCustomersByField(field, trimmed)
+      setCustomerFound(result.customerFound)
+      setLastMatchLabel(
+        result.customerFound
+          ? result.displayName || result.leadId || trimmed
+          : `No customer for ${field}: ${trimmed}`
+      )
+      if (result.customerFound && result.leadId) {
+        setSelectedLeadId(result.leadId)
+        setHighlightLan(result.highlightLoanAccountNumber || '')
+        setActiveTab('overview')
+      } else {
+        setSelectedLeadId('')
+        setHighlightLan('')
+        setDashboard(null)
+        setCustomerProfile(null)
       }
     } finally {
       setSearching(false)
     }
+  }
+
+  async function handleSearch(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    await runFieldSearch(searchField, searchValue)
   }
 
   async function handleMockInbound() {
@@ -133,33 +143,9 @@ export function AgentDashboard() {
     if (!mobile) {
       return
     }
-    const existing = await searchCustomers(mobile)
-    if (existing[0]) {
-      setQuery(mobile)
-      setResults(existing)
-      openCustomer(existing[0].leadId)
-      return
-    }
-
-    const lead = await ingestLead({
-      leadId: String(Date.now()).slice(-7),
-      mobileNumber: mobile,
-      title: `Inbound call · ${mobile}`,
-      source: 'INBOUND_CALL',
-      priority: 'MEDIUM'
-    })
-    await refreshQueue()
-    openCustomer(lead.leadId, lead.id)
-  }
-
-  async function handleAddNote(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (!note.trim() || !selectedLeadId) {
-      return
-    }
-    await createNote(selectedLeadId, note, callDisposition)
-    setNote('')
-    await refreshDashboard()
+    setSearchField('mobile')
+    setSearchValue(mobile)
+    await runFieldSearch('mobile', mobile)
   }
 
   async function handleCreateTicket(event: FormEvent<HTMLFormElement>) {
@@ -184,14 +170,8 @@ export function AgentDashboard() {
     await refreshDashboard()
   }
 
-  async function handleStatus(status: string) {
-    const lead = queue.find((item) => item.leadId === selectedLeadId)
-    if (!lead) {
-      return
-    }
-    await updateLeadStatus(lead.id, status)
-    await refreshQueue()
-  }
+  const searchPlaceholder =
+    SEARCH_FIELDS.find((field) => field.value === searchField)?.placeholder || 'Search value'
 
   return (
     <div>
@@ -200,7 +180,6 @@ export function AgentDashboard() {
           <p className="eyebrow">Agent desk</p>
           <h2>Customer workspace</h2>
         </div>
-        <span className="badge">{queue.length} assigned</span>
       </div>
 
       <div className="mode-tabs">
@@ -260,10 +239,21 @@ export function AgentDashboard() {
       ) : (
         <>
           <form className="command-bar" onSubmit={handleSearch}>
+            <select
+              aria-label="Search field"
+              value={searchField}
+              onChange={(event) => setSearchField(event.target.value as SearchField)}
+            >
+              {SEARCH_FIELDS.map((field) => (
+                <option key={field.value} value={field.value}>
+                  {field.label}
+                </option>
+              ))}
+            </select>
             <input
-              placeholder="Search mobile, lead ID, loan ID…"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              placeholder={searchPlaceholder}
+              value={searchValue}
+              onChange={(event) => setSearchValue(event.target.value)}
             />
             <input
               placeholder="Inbound call mobile"
@@ -273,30 +263,27 @@ export function AgentDashboard() {
             <button className="secondary" type="button" onClick={handleMockInbound}>
               Open from call
             </button>
-            <button disabled={searching || !query.trim()} type="submit">
+            <button disabled={searching || !searchValue.trim()} type="submit">
               {searching ? 'Searching…' : 'Search'}
             </button>
           </form>
 
-          {results.length > 0 && (
-            <p className="search-hint">
-              {results.length} match{results.length === 1 ? '' : 'es'} found.
-            </p>
+          {lastMatchLabel && (
+            <p className="search-hint">{lastMatchLabel}</p>
           )}
 
           <section className="workspace-stack">
-            <div className="panel workspace-toolbar">
-              <p className="eyebrow">Assigned tickets</p>
-              <TicketTabs
-                queue={queue}
-                selectedTicketId={selectedTicketId}
-                onSelect={openCustomer}
-              />
-            </div>
-
-            {!dashboard || !customerProfile ? (
+            {customerFound === false ? (
               <div className="panel empty-state">
-                Select a ticket above or search to open a customer profile.
+                <p>Customer not found for this {searchField}.</p>
+                <p className="meta">
+                  Create a ticket in the Support tab with the mobile number in Freshdesk, then link
+                  the customer when identified.
+                </p>
+              </div>
+            ) : !dashboard || !customerProfile ? (
+              <div className="panel empty-state">
+                Search by field or open an inbound call to load a customer profile.
               </div>
             ) : (
               <div className="panel workspace-body">
@@ -304,22 +291,6 @@ export function AgentDashboard() {
                   <div>
                     <p className="eyebrow">Customer 360</p>
                     <h3>{customerProfile.identity.name}</h3>
-                  </div>
-                  <div className="header-actions">
-                    {selectedTicket && (
-                      <span className={`status-pill ${statusTone(selectedTicket.status)}`}>
-                        {selectedTicket.status.replace('_', ' ')}
-                      </span>
-                    )}
-                    <button className="secondary" type="button" onClick={() => handleStatus('IN_PROGRESS')}>
-                      Start
-                    </button>
-                    <button className="secondary" type="button" onClick={() => handleStatus('FOLLOW_UP')}>
-                      Follow-up
-                    </button>
-                    <button className="ghost" type="button" onClick={() => handleStatus('ESCALATED')}>
-                      Escalate
-                    </button>
                   </div>
                 </div>
 
@@ -330,7 +301,7 @@ export function AgentDashboard() {
                     <CustomerOverview
                       leadId={selectedLeadId}
                       profile={customerProfile}
-                      ticket={selectedTicket}
+                      highlightLoanAccountNumber={highlightLan}
                       onSelectLoan={openLoanFromOverview}
                     />
                   )}
@@ -382,16 +353,6 @@ export function AgentDashboard() {
                             Create ticket
                           </button>
                         </form>
-                        <form onSubmit={handleAddNote}>
-                          <textarea
-                            placeholder="Add a note or disposition"
-                            value={note}
-                            onChange={(event) => setNote(event.target.value)}
-                          />
-                          <button className="secondary" style={{ marginTop: 10 }} type="submit">
-                            Save note
-                          </button>
-                        </form>
                       </section>
 
                       <div className="grid two">
@@ -422,7 +383,7 @@ export function AgentDashboard() {
                         </ActivityBlock>
                       </div>
 
-                      <ActivityBlock title="Recent activity" empty="Notes and updates will appear here.">
+                      <ActivityBlock title="Timeline" empty="Calls and tickets will appear here.">
                         {dashboard.activity.map((item) => (
                           <div className="compact-item" key={item.id}>
                             <div>
@@ -464,11 +425,4 @@ function ActivityBlock({
       </div>
     </section>
   )
-}
-
-function statusTone(status: string) {
-  if (status === 'ESCALATED') return 'danger'
-  if (status === 'FOLLOW_UP') return 'warning'
-  if (status === 'IN_PROGRESS' || status === 'CLOSED') return 'success'
-  return ''
 }

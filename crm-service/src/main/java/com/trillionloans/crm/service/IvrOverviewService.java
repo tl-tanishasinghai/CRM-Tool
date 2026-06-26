@@ -12,8 +12,10 @@ import com.trillionloans.crm.model.CrmModels.IvrOverviewSummary;
 import com.trillionloans.crm.model.CrmModels.Role;
 import com.trillionloans.crm.model.CrmModels.StaffUser;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -42,16 +44,21 @@ public class IvrOverviewService {
 
   public IvrOverviewResponse listOverview(
       StaffUser user,
+      String assignment,
       String query,
       String leadId,
       String mobileNumber,
       String loanAccountNumber,
       String disposition,
-      String callSource,
       Instant from,
       Instant to,
       int page,
       int size) {
+    Instant windowFrom = from == null ? Instant.now().minus(24, ChronoUnit.HOURS) : from;
+    Instant windowTo = to == null ? Instant.now() : to;
+    String assignmentFilter =
+        assignment == null || assignment.isBlank() ? "assigned" : assignment.toLowerCase(Locale.ROOT);
+
     List<CallEvent> scopedCalls = scopedCalls(user);
     List<IvrCallRow> rows =
         scopedCalls.stream()
@@ -71,17 +78,9 @@ public class IvrOverviewService {
                     disposition == null
                         || disposition.isBlank()
                         || call.disposition().name().equalsIgnoreCase(disposition))
-            .filter(
-                call ->
-                    callSource == null
-                        || callSource.isBlank()
-                        || seedMeta
-                            .getOrDefault(call.id(), IvrSeedMeta.infer(call))
-                            .source()
-                            .name()
-                            .equalsIgnoreCase(callSource))
-            .filter(call -> from == null || !call.startedAt().isBefore(from))
-            .filter(call -> to == null || !call.startedAt().isAfter(to))
+            .filter(call -> !call.startedAt().isBefore(windowFrom))
+            .filter(call -> !call.startedAt().isAfter(windowTo))
+            .filter(call -> matchesAssignment(call, user, assignmentFilter))
             .filter(call -> matchesQuery(call, query))
             .map(this::toRow)
             .sorted(Comparator.comparing(IvrCallRow::startedAt).reversed())
@@ -100,9 +99,23 @@ public class IvrOverviewService {
         summarize(rows));
   }
 
+  private boolean matchesAssignment(CallEvent call, StaffUser user, String assignmentFilter) {
+    FreshdeskAgentTicket ticket = resolveTicket(call);
+    boolean agentAssigned = call.agentId() != null && call.agentId().equals(user.id());
+    boolean ticketAssigned =
+        ticket != null
+            && ticket.assigneeEmail() != null
+            && ticket.assigneeEmail().equalsIgnoreCase(user.email());
+    boolean assigned = agentAssigned || ticketAssigned;
+    if ("unassigned".equals(assignmentFilter)) {
+      return !assigned;
+    }
+    return assigned;
+  }
+
   private List<CallEvent> scopedCalls(StaffUser user) {
     if (user.role() == Role.AGENT) {
-      return store.callsForAgent(user.id());
+      return store.listCalls();
     }
     if (user.role() == Role.LEAD) {
       Set<String> teamAgentIds =
@@ -120,7 +133,7 @@ public class IvrOverviewService {
     IvrSeedMeta meta = seedMeta.getOrDefault(call.id(), IvrSeedMeta.infer(call));
     StaffUser agent = safeUser(call.agentId()).orElse(null);
     CrmLead lead = call.leadId() == null ? null : store.findLeadByLeadId(call.leadId()).orElse(null);
-    FreshdeskAgentTicket ticket = resolveTicket(call, lead, meta);
+    FreshdeskAgentTicket ticket = resolveTicket(call);
 
     String mobile =
         lead != null && lead.mobileNumber() != null
@@ -131,23 +144,28 @@ public class IvrOverviewService {
             ? lead.loanAccountNumber()
             : meta.loanAccountNumber();
     String clientId = lead != null ? lead.clientId() : null;
+    IvrCallSource source = resolveSource(call, meta);
+    String ticketRef = call.freshdeskTicketId() != null ? call.freshdeskTicketId() : ticket != null ? ticket.id() : meta.freshdeskTicketId();
+    String assignedAgent = agent != null ? agent.name() : ticket != null ? ticket.assigneeName() : "Unassigned";
 
     return new IvrCallRow(
         call.id(),
         call.callSid(),
         call.agentId(),
         agent != null ? agent.name() : "GreyLabs Bot",
+        assignedAgent,
         call.leadId(),
         clientId,
         piiMaskingService.maskMobile(mobile),
         lan,
+        ticket != null ? ticket.requesterEmail() : null,
         meta.summary(),
-        ticket != null ? ticket.id() : meta.freshdeskTicketId(),
+        ticketRef,
         ticket != null ? ticket.freshdeskId() : null,
         ticket != null ? ticket.status().name() : null,
         call.direction(),
         call.disposition(),
-        meta.source(),
+        source,
         meta.categoryL1(),
         meta.categoryL2(),
         meta.categoryL3(),
@@ -157,10 +175,28 @@ public class IvrOverviewService {
         call.syncStatus());
   }
 
-  private FreshdeskAgentTicket resolveTicket(CallEvent call, CrmLead lead, IvrSeedMeta meta) {
+  private IvrCallSource resolveSource(CallEvent call, IvrSeedMeta meta) {
+    if ("greylabs_bot".equalsIgnoreCase(call.sourceChannel())) {
+      return IvrCallSource.GREYLABS_BOT;
+    }
+    if ("agent".equalsIgnoreCase(call.sourceChannel())) {
+      return call.direction() == CallDirection.INBOUND
+          ? IvrCallSource.EXOTEL_INBOUND
+          : IvrCallSource.EXOTEL_OUTBOUND;
+    }
+    return meta.source();
+  }
+
+  private FreshdeskAgentTicket resolveTicket(CallEvent call) {
+    if (call.freshdeskTicketId() != null) {
+      return freshdeskTicketService.findById(call.freshdeskTicketId()).orElse(null);
+    }
+    IvrSeedMeta meta = seedMeta.getOrDefault(call.id(), IvrSeedMeta.infer(call));
     if (meta.freshdeskTicketId() != null) {
       return freshdeskTicketService.findById(meta.freshdeskTicketId()).orElse(null);
     }
+    CrmLead lead =
+        call.leadId() == null ? null : store.findLeadByLeadId(call.leadId()).orElse(null);
     return freshdeskTicketService.listAllTickets().stream()
         .filter(
             ticket ->
@@ -207,7 +243,7 @@ public class IvrOverviewService {
     IvrSeedMeta meta = seedMeta.getOrDefault(call.id(), IvrSeedMeta.infer(call));
     StaffUser agent = safeUser(call.agentId()).orElse(null);
     CrmLead lead = call.leadId() == null ? null : store.findLeadByLeadId(call.leadId()).orElse(null);
-    FreshdeskAgentTicket ticket = resolveTicket(call, lead, meta);
+    FreshdeskAgentTicket ticket = resolveTicket(call);
     String normalized = query.toLowerCase();
     return contains(meta.summary(), normalized)
         || contains(call.leadId(), normalized)
@@ -215,7 +251,7 @@ public class IvrOverviewService {
         || contains(resolveRawMobile(call), normalized)
         || contains(resolveLoanAccountNumber(call), normalized)
         || contains(ticket == null ? null : ticket.freshdeskId(), normalized)
-        || contains(ticket == null ? meta.freshdeskTicketId() : ticket.id(), normalized)
+        || contains(ticket == null ? call.freshdeskTicketId() : ticket.id(), normalized)
         || contains(call.callSid(), normalized)
         || contains(agent == null ? null : agent.name(), normalized)
         || contains(meta.categoryL1(), normalized)
@@ -292,8 +328,8 @@ public class IvrOverviewService {
 
     static IvrSeedMeta infer(CallEvent call) {
       IvrCallSource source =
-          call.syncStatus().name().equals("SYNCED") && call.callSid() != null
-                  && call.callSid().contains("greylabs")
+          "greylabs_bot".equalsIgnoreCase(call.sourceChannel())
+                  || (call.callSid() != null && call.callSid().contains("greylabs"))
               ? IvrCallSource.GREYLABS_BOT
               : call.direction() == CallDirection.INBOUND
                   ? IvrCallSource.EXOTEL_INBOUND
