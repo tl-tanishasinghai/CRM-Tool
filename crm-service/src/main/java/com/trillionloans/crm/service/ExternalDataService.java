@@ -103,6 +103,115 @@ public class ExternalDataService {
     return mockLoans(leadId);
   }
 
+  public String resolveLeadIdByLan(String lan) {
+    if (lan == null || lan.isBlank()) {
+      return null;
+    }
+    String normalized = lan.trim();
+    if (!useLiveIntegrations) {
+      if (normalized.contains("1002001") || normalized.equals("LAN-900001")) {
+        return "1002001";
+      }
+      if (normalized.contains("1002002")) {
+        return "1002002";
+      }
+      if (normalized.startsWith("LAN-")) {
+        String suffix = normalized.substring("LAN-".length());
+        if (suffix.matches("\\d+")) {
+          return suffix.replaceAll("-\\d+$", "").replaceAll("-2$", "");
+        }
+      }
+    }
+    try {
+      String leadId =
+          lmsClient
+              .get()
+              .uri("/partners/api/v1/collection/loan/{loanAccountNumber}/lead-id", normalized)
+              .headers(this::applyJsonHeaders)
+              .retrieve()
+              .body(String.class);
+      return leadId == null || leadId.isBlank() ? null : leadId.trim();
+    } catch (Exception ex) {
+      log.debug("LMS LAN lookup failed for {}: {}", normalized, ex.getMessage());
+      return null;
+    }
+  }
+
+  public String resolveLeadIdByLoanApplicationId(String loanApplicationId) {
+    if (loanApplicationId == null || loanApplicationId.isBlank()) {
+      return null;
+    }
+    String normalized = loanApplicationId.trim();
+    if (!useLiveIntegrations) {
+      if (normalized.contains("700001") || normalized.contains("1002001")) {
+        return "1002001";
+      }
+      if (normalized.contains("700002") || normalized.contains("1002002")) {
+        return "1002002";
+      }
+      if (normalized.startsWith("LA-")) {
+        String suffix = normalized.substring("LA-".length());
+        if (suffix.matches("\\d+")) {
+          return suffix.replaceAll("-\\d+$", "").replaceAll("-2$", "").replaceAll("-3$", "");
+        }
+      }
+    }
+    try {
+      Object payload =
+          losClient
+              .get()
+              .uri("/partners/api/v1/lead/application/{loanApplicationId}", normalized)
+              .headers(this::applyLosHeaders)
+              .retrieve()
+              .body(Object.class);
+      List<String> ids = extractLeadIds(payload);
+      return ids.isEmpty() ? null : ids.get(0);
+    } catch (Exception ex) {
+      log.debug("LOS application lookup failed for {}: {}", normalized, ex.getMessage());
+      return null;
+    }
+  }
+
+  public String resolveLanForApplication(String leadId, String loanApplicationId) {
+    return getLoanSummaries(leadId).stream()
+        .filter(
+            loan ->
+                loan.loanApplicationId() != null
+                    && loan.loanApplicationId().equalsIgnoreCase(loanApplicationId))
+        .map(LoanSummary::loanAccountNumber)
+        .findFirst()
+        .orElse(null);
+  }
+
+  public String resolveLeadIdByEmail(String email) {
+    if (email == null || email.isBlank()) {
+      return null;
+    }
+    String normalized = email.trim().toLowerCase(Locale.ROOT);
+    if (!useLiveIntegrations) {
+      if (normalized.contains("rahul")) {
+        return "1002001";
+      }
+      if (normalized.contains("priya")) {
+        return "1002002";
+      }
+    }
+    try {
+      Object payload =
+          losClient
+              .get()
+              .uri("/partners/api/v1/lead/email/{email}", normalized)
+              .headers(this::applyLosHeaders)
+              .retrieve()
+              .body(Object.class);
+      List<String> ids = extractLeadIds(payload);
+      return ids.isEmpty() ? null : ids.get(0);
+    } catch (Exception ex) {
+      log.debug("LOS email lookup failed for {}: {}", normalized, ex.getMessage());
+      return null;
+    }
+  }
+
   public List<String> searchLeadIdsByMobile(String mobileNumber) {
     if (!useLiveIntegrations || mobileNumber == null || mobileNumber.isBlank()) {
       return List.of();

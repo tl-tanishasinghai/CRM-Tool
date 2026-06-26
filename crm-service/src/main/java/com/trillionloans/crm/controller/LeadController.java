@@ -108,6 +108,7 @@ public class LeadController {
   }
 
   @GetMapping("/search")
+  @Deprecated
   public List<SearchResult> search(
       @RequestHeader("X-CRM-Token") String token,
       @RequestParam String query,

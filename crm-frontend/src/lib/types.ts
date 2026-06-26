@@ -269,10 +269,12 @@ export type FreshdeskAgentTicket = {
   assigneeName: string
   assigneeEmail: string
   channel: string
+  sourceChannel?: string | null
   slaHint: string
   createdAt: string
   updatedAt: string
   closedAt?: string | null
+  conversationCount?: number
   conversations: FreshdeskConversationEntry[]
 }
 
@@ -352,6 +354,17 @@ export type SearchResult = {
   loanApplicationId?: string | null
   displayName: string
   matchedOn: string
+}
+
+export type FieldSearchResult = {
+  leadId?: string | null
+  clientId?: string | null
+  matchedField: string
+  matchedValue: string
+  highlightLoanAccountNumber?: string | null
+  customerFound: boolean
+  displayName?: string | null
+  mobileNumber?: string | null
 }
 
 export type TeamQueueResponse = {
@@ -478,10 +491,12 @@ export type IvrCallRow = {
   callSid: string
   agentId?: string | null
   agentName: string
+  assignedAgent?: string | null
   leadId?: string | null
   clientId?: string | null
   mobileNumber?: string | null
   loanAccountNumber?: string | null
+  email?: string | null
   callSummary: string
   freshdeskTicketId?: string | null
   freshdeskTicketRef?: string | null
@@ -515,12 +530,12 @@ export type IvrOverviewResponse = {
 }
 
 export type IvrOverviewFilters = {
+  assignment?: 'assigned' | 'unassigned'
   query?: string
   leadId?: string
   mobileNumber?: string
   loanAccountNumber?: string
   disposition?: string
-  callSource?: string
   from?: string
   to?: string
   page?: number

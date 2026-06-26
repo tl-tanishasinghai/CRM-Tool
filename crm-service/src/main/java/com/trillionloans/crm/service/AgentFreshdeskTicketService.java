@@ -51,6 +51,10 @@ public class AgentFreshdeskTicketService {
     return freshdeskTicketService.isConfigured();
   }
 
+  public String freshdeskBaseUrl() {
+    return freshdeskTicketService.baseUrl();
+  }
+
   public List<FreshdeskAgentTicket> listAllTickets() {
     return ticketStore.values().stream()
         .sorted(Comparator.comparing(FreshdeskAgentTicket::updatedAt).reversed())
@@ -71,6 +75,7 @@ public class AgentFreshdeskTicketService {
       Instant createdTo,
       Instant closedFrom,
       Instant closedTo) {
+    ensureSynced(agent);
     return listScopedBucket(
         BucketScope.forUser(agent),
         agent,
@@ -168,16 +173,141 @@ public class AgentFreshdeskTicketService {
   }
 
   public FreshdeskTicketBucketResponse syncFromFreshdesk(StaffUser agent) {
+    ensureSynced(agent);
+    return listBucket(agent, null, null, null, null, null, null, null, null);
+  }
+
+  private void ensureSynced(StaffUser agent) {
     if (freshdeskTicketService.isConfigured()) {
       try {
-        List<FreshdeskAgentTicket> remoteTickets = freshdeskTicketService.fetchAgentTickets(agent.email());
+        List<FreshdeskAgentTicket> remoteTickets =
+            freshdeskTicketService.fetchAgentTickets(agent.email());
         remoteTickets.forEach(ticket -> ticketStore.put(ticket.id(), ticket));
       } catch (RuntimeException exception) {
         log.warn("Freshdesk sync failed for agent {}", agent.email(), exception);
       }
     }
     lastSyncedAt = Instant.now();
-    return listBucket(agent, null, null, null, null, null, null, null, null);
+  }
+
+  public List<FreshdeskConversationEntry> getConversations(String ticketId) {
+    FreshdeskAgentTicket ticket =
+        ticketStore.values().stream()
+            .filter(item -> item.id().equals(ticketId))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException("Freshdesk ticket not found"));
+
+    if (freshdeskTicketService.isConfigured()) {
+      List<FreshdeskConversationEntry> remote =
+          freshdeskTicketService.fetchConversations(ticket.freshdeskId());
+      if (!remote.isEmpty()) {
+        FreshdeskAgentTicket updated =
+            copyTicket(
+                ticket,
+                ticket.status(),
+                ticket.priority(),
+                remote,
+                ticket.closedAt(),
+                remote.size());
+        ticketStore.put(updated.id(), updated);
+        return remote;
+      }
+    }
+    return ticket.conversations();
+  }
+
+  public FreshdeskAgentTicket linkCustomer(
+      StaffUser agent, String ticketId, String leadId, String mobileNumber, String loanAccountNumber) {
+    FreshdeskAgentTicket ticket =
+        ticketStore.values().stream()
+            .filter(item -> item.id().equals(ticketId))
+            .findFirst()
+            .orElseThrow(() -> new NotFoundException("Freshdesk ticket not found"));
+
+    if (freshdeskTicketService.isConfigured()) {
+      freshdeskTicketService.linkCustomer(
+          ticket.freshdeskId(), leadId, mobileNumber, loanAccountNumber);
+    }
+
+    FreshdeskAgentTicket updated =
+        new FreshdeskAgentTicket(
+            ticket.id(),
+            ticket.freshdeskId(),
+            leadId,
+            ticket.subject(),
+            ticket.requesterName(),
+            ticket.requesterEmail(),
+            mobileNumber != null ? mobileNumber : ticket.mobileNumber(),
+            loanAccountNumber != null ? loanAccountNumber : ticket.loanAccountNumber(),
+            ticket.status(),
+            ticket.priority(),
+            ticket.category(),
+            ticket.assigneeName(),
+            ticket.assigneeEmail(),
+            ticket.channel(),
+            ticket.sourceChannel(),
+            ticket.slaHint(),
+            ticket.createdAt(),
+            Instant.now(),
+            ticket.closedAt(),
+            ticket.conversationCount(),
+            ticket.conversations());
+    ticketStore.put(updated.id(), updated);
+    return updated;
+  }
+
+  public void registerTicketFromFunnel(
+      String ticketRef,
+      String freshdeskId,
+      String leadId,
+      String subject,
+      String mobileNumber,
+      String loanAccountNumber,
+      String channelTag) {
+    Instant now = Instant.now();
+    ticketStore.put(
+        ticketRef,
+        new FreshdeskAgentTicket(
+            ticketRef,
+            freshdeskId == null ? ticketRef.replace("fd-", "") : freshdeskId,
+            leadId,
+            subject,
+            "Customer",
+            "",
+            mobileNumber,
+            loanAccountNumber,
+            TicketStatus.OPEN,
+            TicketPriority.MEDIUM,
+            "CRM funnel",
+            "CRM",
+            "",
+            "Phone",
+            channelTag,
+            "New",
+            now,
+            now,
+            null,
+            1,
+            List.of(
+                new FreshdeskConversationEntry(
+                    "conv-" + ticketRef,
+                    "CRM",
+                    subject,
+                    now,
+                    false))));
+  }
+
+  public void markResolved(String ticketId) {
+    ticketStore.computeIfPresent(
+        ticketId,
+        (id, ticket) ->
+            copyTicket(
+                ticket,
+                TicketStatus.RESOLVED,
+                ticket.priority(),
+                ticket.conversations(),
+                Instant.now(),
+                ticket.conversationCount()));
   }
 
   public FreshdeskAgentTicket addReply(StaffUser agent, String ticketId, String body) {
@@ -200,7 +330,14 @@ public class AgentFreshdeskTicketService {
             Instant.now(),
             true));
 
-    FreshdeskAgentTicket updated = copyTicket(ticket, ticket.status(), ticket.priority(), conversations, ticket.closedAt());
+    FreshdeskAgentTicket updated =
+        copyTicket(
+            ticket,
+            ticket.status(),
+            ticket.priority(),
+            conversations,
+            ticket.closedAt(),
+            conversations.size());
     ticketStore.put(updated.id(), updated);
     return updated;
   }
@@ -224,7 +361,14 @@ public class AgentFreshdeskTicketService {
       freshdeskTicketService.updateTicket(ticket.freshdeskId(), nextStatus, nextPriority);
     }
 
-    FreshdeskAgentTicket updated = copyTicket(ticket, nextStatus, nextPriority, ticket.conversations(), closedAt);
+    FreshdeskAgentTicket updated =
+        copyTicket(
+            ticket,
+            nextStatus,
+            nextPriority,
+            ticket.conversations(),
+            closedAt,
+            ticket.conversationCount());
     ticketStore.put(updated.id(), updated);
     return updated;
   }
@@ -264,6 +408,7 @@ public class AgentFreshdeskTicketService {
         "Asha Agent",
         "agent1@trillionloans.com",
         "Email",
+        "greylabs_bot",
         "First response due",
         now.minusSeconds(86400 * 2),
         now.minusSeconds(3600),
@@ -283,6 +428,7 @@ public class AgentFreshdeskTicketService {
         "Asha Agent",
         "agent1@trillionloans.com",
         "Web",
+        "agent",
         "Waiting on customer",
         now.minusSeconds(86400 * 5),
         now.minusSeconds(7200),
@@ -302,6 +448,7 @@ public class AgentFreshdeskTicketService {
         "Asha Agent",
         "agent1@trillionloans.com",
         "Phone",
+        "greylabs_bot",
         "Resolved",
         now.minusSeconds(86400 * 12),
         now.minusSeconds(86400),
@@ -321,6 +468,7 @@ public class AgentFreshdeskTicketService {
         "Asha Agent",
         "agent1@trillionloans.com",
         "Email",
+        "agent",
         "First response overdue by 5 hours",
         now.minusSeconds(86400),
         now.minusSeconds(1800),
@@ -340,6 +488,7 @@ public class AgentFreshdeskTicketService {
         "Ravi Agent",
         "agent2@trillionloans.com",
         "Email",
+        "agent",
         "Closed",
         now.minusSeconds(86400 * 20),
         now.minusSeconds(86400 * 3),
@@ -361,10 +510,19 @@ public class AgentFreshdeskTicketService {
       String assigneeName,
       String assigneeEmail,
       String channel,
+      String sourceChannel,
       String slaHint,
       Instant createdAt,
       Instant updatedAt,
       Instant closedAt) {
+    List<FreshdeskConversationEntry> conversations =
+        List.of(
+            new FreshdeskConversationEntry(
+                "conv-" + freshdeskId + "-1",
+                requesterName,
+                "Initial request logged from " + channel.toLowerCase() + " channel.",
+                createdAt,
+                false));
     ticketStore.put(
         id,
         new FreshdeskAgentTicket(
@@ -382,17 +540,13 @@ public class AgentFreshdeskTicketService {
             assigneeName,
             assigneeEmail,
             channel,
+            sourceChannel,
             slaHint,
             createdAt,
             updatedAt,
             closedAt,
-            List.of(
-                new FreshdeskConversationEntry(
-                    "conv-" + freshdeskId + "-1",
-                    requesterName,
-                    "Initial request logged from " + channel.toLowerCase() + " channel.",
-                    createdAt,
-                    false))));
+            conversations.size(),
+            conversations));
   }
 
   private FreshdeskAgentTicket copyTicket(
@@ -400,7 +554,8 @@ public class AgentFreshdeskTicketService {
       TicketStatus status,
       TicketPriority priority,
       List<FreshdeskConversationEntry> conversations,
-      Instant closedAt) {
+      Instant closedAt,
+      int conversationCount) {
     return new FreshdeskAgentTicket(
         ticket.id(),
         ticket.freshdeskId(),
@@ -416,10 +571,12 @@ public class AgentFreshdeskTicketService {
         ticket.assigneeName(),
         ticket.assigneeEmail(),
         ticket.channel(),
+        ticket.sourceChannel(),
         ticket.slaHint(),
         ticket.createdAt(),
         Instant.now(),
         closedAt,
+        conversationCount,
         conversations);
   }
 

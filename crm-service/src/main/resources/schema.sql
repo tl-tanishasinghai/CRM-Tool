@@ -74,6 +74,8 @@ CREATE TABLE IF NOT EXISTS call_logs (
     to_number           VARCHAR(32),
     duration_seconds    INTEGER,
     recording_url       VARCHAR(512),
+    source_channel      VARCHAR(64),
+    freshdesk_ticket_id VARCHAR(64),
     sync_status         VARCHAR(32),
     started_at          TIMESTAMPTZ,
     ended_at            TIMESTAMPTZ,
@@ -85,6 +87,12 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_call_logs_call_sid ON call_logs (call_sid) 
 CREATE INDEX IF NOT EXISTS idx_call_logs_agent_id ON call_logs (agent_id);
 CREATE INDEX IF NOT EXISTS idx_call_logs_lead_id ON call_logs (lead_id);
 CREATE INDEX IF NOT EXISTS idx_call_logs_started_at ON call_logs (started_at DESC);
+
+-- Migration for existing deployments (idempotent)
+ALTER TABLE call_logs ADD COLUMN IF NOT EXISTS source_channel VARCHAR(64);
+ALTER TABLE call_logs ADD COLUMN IF NOT EXISTS freshdesk_ticket_id VARCHAR(64);
+CREATE INDEX IF NOT EXISTS idx_call_logs_freshdesk_ticket_id ON call_logs (freshdesk_ticket_id);
+CREATE INDEX IF NOT EXISTS idx_call_logs_source_channel ON call_logs (source_channel);
 
 CREATE TABLE IF NOT EXISTS agent_notes (
     id              VARCHAR(64) PRIMARY KEY,

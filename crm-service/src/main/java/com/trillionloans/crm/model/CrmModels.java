@@ -203,11 +203,16 @@ public final class CrmModels {
       String assigneeName,
       String assigneeEmail,
       String channel,
+      String sourceChannel,
       String slaHint,
       Instant createdAt,
       Instant updatedAt,
       Instant closedAt,
+      int conversationCount,
       List<FreshdeskConversationEntry> conversations) {}
+
+  public record FreshdeskLinkCustomerRequest(
+      @NotBlank String leadId, String mobileNumber, String loanAccountNumber) {}
 
   public record FreshdeskBucketSummary(
       long total, long openCount, long pendingCount, long resolvedCount, long closedCount) {}
@@ -243,6 +248,8 @@ public final class CrmModels {
       String toNumber,
       Integer durationSeconds,
       String recordingUrl,
+      String sourceChannel,
+      String freshdeskTicketId,
       Instant startedAt,
       Instant endedAt,
       CallSyncStatus syncStatus,
@@ -258,6 +265,8 @@ public final class CrmModels {
       Integer durationSeconds,
       String recordingUrl,
       Instant startedAt) {}
+
+  public record UpdateCallDispositionRequest(@NotNull CallDisposition disposition) {}
 
   public record ExotelSyncResult(
       Instant from,
@@ -377,10 +386,12 @@ public final class CrmModels {
       String callSid,
       String agentId,
       String agentName,
+      String assignedAgent,
       String leadId,
       String clientId,
       String mobileNumber,
       String loanAccountNumber,
+      String email,
       String callSummary,
       String freshdeskTicketId,
       String freshdeskTicketRef,
@@ -421,6 +432,16 @@ public final class CrmModels {
       String loanApplicationId,
       String displayName,
       String matchedOn) {}
+
+  public record FieldSearchResult(
+      String leadId,
+      String clientId,
+      String matchedField,
+      String matchedValue,
+      String highlightLoanAccountNumber,
+      boolean customerFound,
+      String displayName,
+      String mobileNumber) {}
 
   public record RepaymentScheduleRow(
       Integer period,

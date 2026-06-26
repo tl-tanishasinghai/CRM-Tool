@@ -9,34 +9,32 @@ type Props = {
   onOpenCustomer?: (leadId: string) => void
 }
 
+type AssignmentTab = 'assigned' | 'unassigned'
+
 export function AgentIvrOverview({ onOpenTicket, onOpenCustomer }: Props) {
   const [data, setData] = useState<IvrOverviewResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [assignment, setAssignment] = useState<AssignmentTab>('assigned')
   const [filters, setFilters] = useState({
     query: '',
     leadId: '',
     mobileNumber: '',
     loanAccountNumber: '',
     disposition: '',
-    callSource: '',
-    createdFrom: '',
-    createdTo: '',
     page: 0
   })
 
-  async function load(next = filters) {
+  async function load(next = filters, nextAssignment: AssignmentTab = assignment) {
     setLoading(true)
     try {
       const response = await fetchIvrOverview({
+        assignment: nextAssignment,
         query: next.query || undefined,
         leadId: next.leadId || undefined,
         mobileNumber: next.mobileNumber || undefined,
         loanAccountNumber: next.loanAccountNumber || undefined,
         disposition: next.disposition || undefined,
-        callSource: next.callSource || undefined,
-        from: next.createdFrom || undefined,
-        to: next.createdTo || undefined,
         page: next.page,
         size: 25
       })
@@ -49,6 +47,13 @@ export function AgentIvrOverview({ onOpenTicket, onOpenCustomer }: Props) {
   useEffect(() => {
     load().catch(() => undefined)
   }, [])
+
+  async function handleAssignmentChange(next: AssignmentTab) {
+    setAssignment(next)
+    const nextFilters = { ...filters, page: 0 }
+    setFilters(nextFilters)
+    await load(nextFilters, next)
+  }
 
   async function handleFilterSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -70,8 +75,8 @@ export function AgentIvrOverview({ onOpenTicket, onOpenCustomer }: Props) {
           <p className="eyebrow">IVR overview</p>
           <h3>GreyLabs bot + Exotel call history</h3>
           <p className="meta">
-            AI bot calls via Exotel are logged here. When a customer needs more help, a Freshdesk
-            ticket is created — click the ticket ID to open it in Support and call back.
+            Assigned calls from the last 24 hours. GreyLabs bot and agent inbound paths both route
+            through Exotel — source is shown as a read-only badge on each row.
           </p>
         </div>
         {data && (
@@ -82,6 +87,23 @@ export function AgentIvrOverview({ onOpenTicket, onOpenCustomer }: Props) {
             <IvrStat label="Callbacks" value={data.summary.callbackRequested} />
           </div>
         )}
+      </div>
+
+      <div className="mode-tabs" style={{ marginBottom: 16 }}>
+        <button
+          className={`mode-tab ${assignment === 'assigned' ? 'active' : ''}`}
+          onClick={() => handleAssignmentChange('assigned').catch(() => undefined)}
+          type="button"
+        >
+          Assigned to me
+        </button>
+        <button
+          className={`mode-tab ${assignment === 'unassigned' ? 'active' : ''}`}
+          onClick={() => handleAssignmentChange('unassigned').catch(() => undefined)}
+          type="button"
+        >
+          Not assigned
+        </button>
       </div>
 
       <section className="panel">
@@ -109,16 +131,6 @@ export function AgentIvrOverview({ onOpenTicket, onOpenCustomer }: Props) {
             }
           />
           <select
-            value={filters.callSource}
-            onChange={(event) => setFilters((c) => ({ ...c, callSource: event.target.value }))}
-          >
-            <option value="">All sources</option>
-            <option value="GREYLABS_BOT">GreyLabs bot</option>
-            <option value="EXOTEL_INBOUND">Exotel inbound</option>
-            <option value="EXOTEL_OUTBOUND">Exotel outbound</option>
-            <option value="AGENT_MANUAL">Agent manual</option>
-          </select>
-          <select
             value={filters.disposition}
             onChange={(event) => setFilters((c) => ({ ...c, disposition: event.target.value }))}
           >
@@ -129,23 +141,16 @@ export function AgentIvrOverview({ onOpenTicket, onOpenCustomer }: Props) {
             <option value="RESOLVED">Resolved</option>
             <option value="NOT_CONNECTED">Not connected</option>
           </select>
-          <input
-            type="date"
-            value={filters.createdFrom}
-            onChange={(event) => setFilters((c) => ({ ...c, createdFrom: event.target.value }))}
-          />
-          <input
-            type="date"
-            value={filters.createdTo}
-            onChange={(event) => setFilters((c) => ({ ...c, createdTo: event.target.value }))}
-          />
           <button type="submit">Search</button>
         </form>
       </section>
 
       <section className="panel" style={{ marginTop: 16 }}>
         <div className="ivr-table-head">
-          <h3>Call log {data ? `(${data.total})` : ''}</h3>
+          <h3>
+            Call log {data ? `(${data.total})` : ''} · Last 24h ·{' '}
+            {assignment === 'assigned' ? 'Assigned' : 'Not assigned'}
+          </h3>
           {loading && <span className="meta">Loading…</span>}
         </div>
 
@@ -155,10 +160,10 @@ export function AgentIvrOverview({ onOpenTicket, onOpenCustomer }: Props) {
               <tr>
                 <th>Time</th>
                 <th>Source</th>
+                <th>Agent</th>
                 <th>Lead / LAN</th>
                 <th>Mobile</th>
                 <th>Summary</th>
-                <th>Categories</th>
                 <th>Ticket</th>
                 <th>Disposition</th>
               </tr>
@@ -226,8 +231,9 @@ function IvrCallRowView({
       <tr className={expanded ? 'ivr-row-expanded' : ''} onClick={onToggle} style={{ cursor: 'pointer' }}>
         <td>{formatTime(call.startedAt)}</td>
         <td>
-          <span className="context-pill">{formatSource(call.callSource)}</span>
+          <SourceBadge source={call.callSource} />
         </td>
+        <td>{call.agentName || '—'}</td>
         <td>
           {call.leadId ? (
             <button
@@ -247,12 +253,6 @@ function IvrCallRowView({
         </td>
         <td>{call.mobileNumber || '—'}</td>
         <td className="ivr-summary-cell">{truncate(call.callSummary, 72)}</td>
-        <td>
-          <div className="ivr-categories">
-            <span>{call.categoryL1 || '—'}</span>
-            {call.categoryL2 && <span className="meta">{call.categoryL2}</span>}
-          </div>
-        </td>
         <td>
           {call.freshdeskTicketId ? (
             <button
@@ -317,6 +317,15 @@ function IvrCallRowView({
   )
 }
 
+function SourceBadge({ source }: { source: string }) {
+  const isBot = source === 'GREYLABS_BOT'
+  return (
+    <span className={`context-pill ${isBot ? 'warning' : ''}`}>
+      {isBot ? 'GreyLabs' : 'Agent / Inbound'}
+    </span>
+  )
+}
+
 function IvrStat({ label, value }: { label: string; value: number }) {
   return (
     <div className="ivr-stat">
@@ -342,10 +351,6 @@ function formatTime(value: string) {
     hour: '2-digit',
     minute: '2-digit'
   })
-}
-
-function formatSource(source: string) {
-  return source.replace(/_/g, ' ')
 }
 
 function truncate(value: string, max: number) {

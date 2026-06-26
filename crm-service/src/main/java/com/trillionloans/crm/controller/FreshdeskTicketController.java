@@ -158,4 +158,29 @@ public class FreshdeskTicketController {
     return agentFreshdeskTicketService.updateTicket(
         agent, ticketId, request.status(), request.priority());
   }
+
+  @GetMapping("/{ticketId}/conversations")
+  public List<com.trillionloans.crm.model.CrmModels.FreshdeskConversationEntry> conversations(
+      @RequestHeader("X-CRM-Token") String token, @PathVariable String ticketId) {
+    authService.requireAnyRole(token, Role.ADMIN, Role.LEAD, Role.AGENT);
+    return agentFreshdeskTicketService.getConversations(ticketId);
+  }
+
+  @PostMapping("/{ticketId}/link-customer")
+  public FreshdeskAgentTicket linkCustomer(
+      @RequestHeader("X-CRM-Token") String token,
+      @PathVariable String ticketId,
+      @Valid @RequestBody com.trillionloans.crm.model.CrmModels.FreshdeskLinkCustomerRequest request) {
+    StaffUser agent = authService.requireAnyRole(token, Role.ADMIN, Role.LEAD, Role.AGENT);
+    return agentFreshdeskTicketService.linkCustomer(
+        agent, ticketId, request.leadId(), request.mobileNumber(), request.loanAccountNumber());
+  }
+
+  @GetMapping("/config")
+  public java.util.Map<String, String> config(@RequestHeader("X-CRM-Token") String token) {
+    authService.requireAnyRole(token, Role.ADMIN, Role.LEAD, Role.AGENT);
+    return java.util.Map.of(
+        "freshdeskBaseUrl",
+        agentFreshdeskTicketService.freshdeskBaseUrl());
+  }
 }
